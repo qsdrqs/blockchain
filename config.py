@@ -10,14 +10,18 @@ Authors: Tianyang Zhou <t7zhou@ucsd.edu>
 This file is the configs file for the project.
 
 '''
-# Public config
+
+
 class Config:
+    # Public config
     pass
 
-# Time config
+
 class TimeConfig(Config):
+    # Time config
     pass
 
-# Simulation config
+
 class SimulationConfig(Config):
+    # Simulation config
     pass

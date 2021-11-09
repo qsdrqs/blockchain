@@ -7,12 +7,8 @@ Authors: Tianyang Zhou <t7zhou@ucsd.edu>
          Weifan Ou <w3ou@ucsd.edu>
          Xuanxi Du <xud015@ucsd.edu>
 
-This module defines some entity classes
+This module is used to do visualization works.
+May be Implemented by native Python or Javascript codes.
 
 '''
 
-# import classes
-from user import User
-from ledger import Ledger
-from network import Network
-from transaction import Transaction
