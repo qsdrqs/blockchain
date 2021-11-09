@@ -3,9 +3,10 @@
 Under development
 
 ## Contributing
-1. Finish the code by implementing the functions with 'pass' or 'TODO' (Can use global search to find them)
-2. use autopep8 to format the code (should be integrated in most of Python development tools, just open auto format in your IDEs)
-3. use `skeleton.py` when creating new files
+1. Dependencies can be installed with `pip install -r requirements.txt`, and can be updated with `pip frozen > requirements.txt` when bring in new dependencies.
+2. Finish the code by implementing the functions with 'pass' or 'TODO' (Can use global search to find them)
+3. Use autopep8 to format the code (should be integrated in most of Python development tools, just open auto format in your IDEs)
+4. Use `skeleton.py` when creating new files
 
 ## Road map
 - [ ] transaction mechanism
