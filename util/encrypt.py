@@ -16,6 +16,7 @@ from Crypto.PublicKey import RSA
 from Crypto import Random
 import ast
 
+
 def generate_key_pair():
     '''
     Generate a key pair for the user.
@@ -24,6 +25,7 @@ def generate_key_pair():
     key = RSA.generate(2048, random_generator)
     public_key = key.publickey()
     return key, public_key
+
 
 def verify_signature(public_key, signature, message):
     '''

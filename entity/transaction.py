@@ -12,15 +12,21 @@ This file is class of transaction.
 '''
 from entity import *
 import time
+import hashlib
+
 
 class Transaction:
-    def __init__(self, sender: User, receiver: User, amount):
+    '''
+    Transaction class
+    '''
+
+    def __init__(self, sender: User, receiver: User, amount, ledger: Ledger):
         self.sender = sender
         self.receiver = receiver
         self.signature = None
         self.amount = amount
         self.timestamp = time.time()
-        self.hash = None
+        self.hash = self.calculate_hash(ledger.transactions)
 
     def has_signature(self):
         return self.signature is not None
@@ -28,5 +34,11 @@ class Transaction:
     def add_signature(self, signature):
         self.signature = signature
 
-    def set_hash(self, hash):
-        self.hash = hash
+    def calculate_hash(self, transactions_list):
+        self_hash: str = hashlib.sha256(
+            self.sender.id + self.receiver.id + self.timestamp).hexdigest()
+        tx_hash: str = ""
+        for tx in transactions_list:
+            tx_hash += hashlib.sha256(tx).hexdigest()
+
+        return hashlib.sha256((self_hash + tx_hash).encode()).hexdigest()

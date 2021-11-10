@@ -17,13 +17,13 @@ And provide method to caculate the balance of every user.
 from entity import *
 
 
-class Ledger:
+class Ledger():
     '''
     The ledger class is used to caculate the weight of every user.
     And provide method to caculate the balance of every user.
     '''
 
-    def __init__(self, user_list, init_transactions):
+    def __init__(self, user_list: list[User], init_transactions: list[Transaction]):
         '''
         Initialize the ledger.
 
@@ -33,39 +33,27 @@ class Ledger:
         self.user_list = user_list
         self.transactions = init_transactions
 
-    def get_user_list(self):
-        '''
-        Get the user list.
-
-        Returns:
-            a list of user objects.
-        '''
-        return self.user_list
-
-    def get_user_by_id(self, user_id):
+    def get_user_public_key(self, id):
         '''
         Get the user object by user id.
 
         Args:
-            user_id: the user id.
+            id: the user id.
 
         Returns:
-            the user object.
+            the user' public key.
         '''
         for user in self.user_list:
-            if user.get_id() == user_id:
-                return user
+            if user.id == id:
+                return user.public_key
         return None
 
     def calculate_weight(self, user_id):
         '''
         Calculate the weight of the user.
         '''
-        user = self.get_user_by_id(user_id)
-        if user is None:
-            return None
-
         # TODO: implement this method
+        pass
 
     def append(self, transaction: Transaction):
         '''
@@ -75,12 +63,4 @@ class Ledger:
         Args:
             transaction: the transaction object.
         '''
-        hash_value = self.calculate_hash(transaction)
-        transaction.set_hash(hash_value)
         self.transactions.append(transaction)
-
-    def calculate_hash(self, transaction):
-        '''
-        Calculate the hash value of the original chain adds on this transaction.
-        '''
-        pass
