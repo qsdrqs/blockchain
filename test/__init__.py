@@ -10,5 +10,8 @@ Authors: Tianyang Zhou <t7zhou@ucsd.edu>
 This is unit test module for the project.
 
 '''
+from .transaction import TestTransaction
+
+
 def run_all_tests():
     pass

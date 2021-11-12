@@ -11,8 +11,10 @@ This file define the user in the blockchain.
 
 '''
 
-from entity import *
 from util import encrypt
+from .ledger import Ledger
+from .ledger import UserDigest
+from .transaction import Transaction
 
 
 class User:
@@ -20,27 +22,20 @@ class User:
     User class.
     '''
 
-    def __init__(self, user_id, init_ledger: list[Ledger]):
-        self.id = user_id
-        self.public_key, self.private_key = encrypt.generate_key_pair()
+    def __init__(self, id, init_ledger: list[Ledger]):
+        self.id = id
+        self.private_key, self.public_key = encrypt.generate_key_pair()
         # every user should hold a set of ledgers
         # becuase they may receive from different users
         self.ledgers = init_ledger
 
-    def add_transation(self, receiver: User, amount):
+    def add_transation(self, receiver_id, amount):
         # We should append every ledger in the transaction to the ledger list
         for ledger in self.ledgers:
-            transaction = Transaction(self, receiver, amount, ledger)
+            # The next step has added the transaction to the ledger
+            transaction = Transaction(self.id, receiver_id, amount, ledger)
             transaction.add_signature(
-                self.sign(transaction, self.private_key, ledger))
-            ledger.transactions.append(transaction)
-
-    def sign(self, transaction: Transaction, private_key, ledger):
-        '''
-        Sign the transaction.
-        signature is the only position that a user can use its private key.
-        '''
-        private_key.sign(transaction.hash, transaction.signature)
+                encrypt.sign_message(self.private_key, transaction.hash))
 
     def verify_ledger(self, ledger: Ledger):
         '''
@@ -52,11 +47,23 @@ class User:
             # verify the hash value
             transaction = ledger.transactions[i]
             sub_ledger = ledger.transactions[:i]
-            if transaction.calculate_hash(sub_ledger) != transaction.hash:
+            if transaction.calculate_hash(sub_ledger).hexdigest() != transaction.hash.hexdigest():
                 return False
 
         # verify the signature
         for transaction in ledger.transactions:
-            sender_public_key = transaction.sender.public_key
-            if not sender_public_key.verify(transaction.hash, transaction.signature):
+            if not transaction.has_signature():
                 return False
+
+            sender_public_key = self.ledgers[0].get_user_public_key(
+                transaction.sender_id)
+            if sender_public_key is None or not encrypt.verify_signature(sender_public_key, transaction.signature, transaction.hash):
+                return False
+
+        return True
+
+    def generate_digest(self):
+        '''
+        Generate the digest of the user.
+        '''
+        return UserDigest(self.id, self.public_key)

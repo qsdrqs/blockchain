@@ -6,4 +6,5 @@ __pycache__/
 # Editors or IDE files
 custom.vim
 CS_SESSION
-
+.tasks
+.vimspector.json

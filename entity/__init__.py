@@ -12,7 +12,8 @@ This module defines some entity classes
 '''
 
 # import classes
-from user import User
-from ledger import Ledger
-from network import Network
-from transaction import Transaction
+from .user import User
+from .ledger import Ledger
+from .ledger import UserDigest
+from .network import Network
+from .transaction import Transaction

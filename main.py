@@ -10,6 +10,8 @@ Authors: Tianyang Zhou <t7zhou@ucsd.edu>
 This file the main file of the project.
 
 '''
+import unittest
+from test import TestTransaction
 
 if __name__ == '__main__':
-    pass
+    unittest.main()

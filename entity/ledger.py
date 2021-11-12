@@ -14,7 +14,20 @@ And provide method to caculate the balance of every user.
 
 '''
 
-from entity import *
+from . import *
+from .transaction import Transaction
+
+
+class UserDigest():
+    '''
+    UserDigest is a class that contains the digest of a user.
+    We need to define this class so that we can use it in the ledger.
+    Put the User class in the ledger is dangerous because it will be able to access the private key of every user.
+    '''
+
+    def __init__(self, id, public_key):
+        self.id = id
+        self.public_key = public_key
 
 
 class Ledger():
@@ -23,7 +36,7 @@ class Ledger():
     And provide method to caculate the balance of every user.
     '''
 
-    def __init__(self, user_list: list[User], init_transactions: list[Transaction]):
+    def __init__(self, user_list: list[UserDigest], init_transactions: list[Transaction]):
         '''
         Initialize the ledger.
 
@@ -41,7 +54,7 @@ class Ledger():
             id: the user id.
 
         Returns:
-            the user' public key.
+            the user's public key.
         '''
         for user in self.user_list:
             if user.id == id:
