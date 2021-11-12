@@ -87,14 +87,62 @@ class User:
         '''
         return UserDigest(self.id, self.public_key, self.balance)
 
-    def receive_ledgers(self, ledger):
+    def append_or_update(self, ledger):
         '''
-        Receive the ledger from other users.
+        Check if the ledger should be appended or replace the old one
         '''
 
-    def spread_ledgers(self, user_list):
+        def same_ledger(ledger1, ledger2):
+            '''
+            Check if two ledgers are the same.
+            '''
+            longer = ledger1 if len(ledger1.transactions) >= len(
+                ledger2.transactions) else ledger2
+            shorter = ledger1 if len(ledger1.transactions) < len(
+                ledger2.transactions) else ledger2
+            for i in range(len(shorter.transactions)):
+                # check the hash value of every common transaction
+                if shorter.transactions[i].hash.hexdigest() != longer.transactions[i].hash.hexdigest():
+                    return False
+
+            return True
+
+        for my_ledger in self.ledgers:
+            if same_ledger(my_ledger, ledger):
+                # update the ledger
+                self.ledgers.remove(my_ledger)
+                self.ledgers.append(ledger)
+            else:
+                # append the ledger
+                self.ledgers.append(ledger)
+
+    def receive_ledger(self, ledger):
         '''
-        Spread the ledger to other users.
+        Receive the ledger from other users.
+        Return True if the ledger is valid and added to the user.
+        Return False if the ledger is invalid.
+        '''
+        if self.verify_ledger(ledger):
+            self.append_or_update(ledger)
+            return True
+        else:
+            return False
+
+    def spread_ledgers(self, network):
+        '''
+        Spread the ledger to all other user connected.
+        '''
+        user_id_list = network.get_connected_users(self.id)
+        self.send_ledgers(network, user_id_list)
+
+    def send_ledgers(self, network, receiver_list):
+        '''
+        Send the ledger to specific receivers.
         '''
         for ledger in self.ledgers:
-            ledger.spread_ledger()
+            for receiver_id in receiver_list:
+                if network.send_ledger(self.id, receiver_id, ledger):
+                    continue
+                else:
+                    raise Exception(
+                        "Failed to send ledger from {} to user {}".format(self.id, receiver_id))

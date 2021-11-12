@@ -10,7 +10,8 @@ Under development
 5. Good to do: `FIXME` is some where that may have performance issues.
 
 ## Road map
-- [ ] transaction mechanism
+- [x] transaction mechanism
+- [ ] multi threading support
 - [ ] graph algorithms and ledger spread
 - [ ] delegates ranking
 - [ ] ledger persistence

@@ -27,14 +27,9 @@ class TestTransaction(unittest.TestCase):
         self.user1.ledgers.append(self.ledger.deepcopy())
         self.user2.ledgers.append(self.ledger.deepcopy())
 
-    def test_sign(self):
-        key, public_key = generate_key_pair()
-        message = b'Hello, world!'
-        message = hash_message(message)
-        my_message = b'Hello, world'
-        my_message = hash_message(my_message)
-        signature = sign_message(key, message)
-        self.assertTrue(verify_signature(public_key, signature, message))
+        # init network
+        self.network = Network(100, 100, [self.user1, self.user2])
+
 
     def test_verify(self):
         # init transactions
@@ -63,3 +58,35 @@ class TestTransaction(unittest.TestCase):
         self.user1.ledgers[0].user_list[0].init_balance = 3000
         self.assertTrue(self.user1.add_transation(2, 2000))
         self.assertFalse(self.user2.verify_ledger(self.user1.ledgers[0]))
+
+    def test_spread_transaction(self):
+        # init transactions
+        self.user1.add_transation(2, 100)
+        self.user1.spread_ledgers(self.network)
+        self.user2.add_transation(1, 50)
+        self.user2.spread_ledgers(self.network)
+
+        def same_ledger(ledger1, ledger2):
+            # we only check the transactions
+            if len(ledger1.transactions) != len(ledger2.transactions):
+                return False
+            for i in range(len(ledger1.transactions)):
+                if ledger1.transactions[i].hash.hexdigest() != ledger2.transactions[i].hash.hexdigest():
+                    return False
+
+            return True
+
+        self.assertTrue(len(self.user1.ledgers) ==
+                        len(self.user2.ledgers) == 1)
+        self.assertTrue(same_ledger(
+            self.user1.ledgers[0], self.user2.ledgers[0]))
+
+    def test_append_ledger(self):
+        # init transactions
+        self.user1.add_transation(2, 100)
+        self.user2.add_transation(1, 50)
+        self.user1.spread_ledgers(self.network)
+        self.user2.spread_ledgers(self.network)
+
+        self.assertTrue(len(self.user1.ledgers) ==
+                        len(self.user2.ledgers) == 2)

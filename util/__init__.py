@@ -10,12 +10,4 @@ Authors: Tianyang Zhou <t7zhou@ucsd.edu>
 This module is used to provide some utilities of project.
 
 '''
-import struct
 from .encrypt import *
-
-
-def float_to_bytes(f_value: float):
-    '''
-    Convert float to bytes.
-    '''
-    return struct.pack('>f', f_value)

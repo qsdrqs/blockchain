@@ -44,8 +44,8 @@ class Transaction:
         self.signature = signature
 
     def calculate_hash(self, transactions_list):
-        self_message = util.float_to_bytes(
-            self.sender_id + self.receiver_id + self.timestamp)
+        self_message = str(
+            self.sender_id + self.receiver_id + self.timestamp + self.amount).encode()
         transaction_messages = b''
         for transaction in transactions_list:
             transaction_messages += transaction.hash.hexdigest().encode()
