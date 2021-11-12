@@ -27,7 +27,7 @@ class Network:
         Args:
             rows: number of rows in the network.
             cols: number of columns in the network.
-            users: user list in the network.
+            users: user id list in the network.
         '''
         self.users = users
 
@@ -46,3 +46,13 @@ class Network:
         Refresh the whold network.
         Rebuild the connect matrix and network matrix.
         '''
+        pass
+
+    def get_connected_users(self, user_id):
+        '''
+        Get the connected users of specified user.
+        '''
+        # TODO: To be implemented. Currently, return all other users.
+        connected_users = self.users.copy()
+        connected_users.remove(user_id)
+        return connected_users

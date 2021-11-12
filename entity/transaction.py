@@ -20,15 +20,22 @@ class Transaction:
     Transaction class
     '''
 
-    def __init__(self, sender_id, receiver_id, amount, ledger):
+    def __init__(self, sender_id, receiver_id, amount, ledger=None, timestamp=None, hash=None, signature=None):
+        # Manually implement overload...
+        # Rubbish Python...
         self.sender_id = sender_id
         self.receiver_id = receiver_id
-        self.signature = None
         self.amount = amount
-        self.timestamp = time.time()
-        self.hash = self.calculate_hash(ledger.transactions)
-        # We need to add this transaction to the ledger immediately to ensure the hash correct
-        ledger.append(self)
+        if timestamp is None and hash is None and signature is None and ledger is not None:
+            self.signature = None
+            self.timestamp = time.time()
+            self.hash = self.calculate_hash(ledger.transactions)
+        elif timestamp is not None and hash is not None and signature is not None and ledger is None:
+            self.signature = signature
+            self.timestamp = timestamp
+            self.hash = hash
+        else:
+            raise ValueError('Invalid transaction initialization')
 
     def has_signature(self):
         return self.signature is not None
@@ -44,3 +51,7 @@ class Transaction:
             transaction_messages += transaction.hash.hexdigest().encode()
 
         return util.hash_message(transaction_messages+self_message)
+
+    def deepcopy(self):
+        return Transaction(self.sender_id, self.receiver_id,
+                           self.amount, timestamp=self.timestamp, hash=self.hash, signature=self.signature)

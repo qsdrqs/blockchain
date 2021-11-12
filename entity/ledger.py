@@ -25,9 +25,10 @@ class UserDigest():
     Put the User class in the ledger is dangerous because it will be able to access the private key of every user.
     '''
 
-    def __init__(self, id, public_key):
+    def __init__(self, id, public_key, init_balance):
         self.id = id
         self.public_key = public_key
+        self.init_balance = init_balance
 
 
 class Ledger():
@@ -61,6 +62,30 @@ class Ledger():
                 return user.public_key
         return None
 
+    def get_user_balance(self, id, init_balance=-1):
+        '''
+        Get the balance of the user.
+        We need to caculate the balance of every user from the transactions.
+        FIXME: Can be optimized.
+        '''
+        if init_balance == -1:
+            for user in self.user_list:
+                if user.id == id:
+                    init_balance = user.init_balance
+                    break
+
+        balance = init_balance
+        if len(self.transactions) == 0:
+            return balance
+
+        for transaction in self.transactions:
+            if transaction.sender_id == id:
+                balance -= transaction.amount
+            elif transaction.receiver_id == id:
+                balance += transaction.amount
+
+        return balance
+
     def calculate_weight(self, user_id):
         '''
         Calculate the weight of the user.
@@ -77,3 +102,20 @@ class Ledger():
             transaction: the transaction object.
         '''
         self.transactions.append(transaction)
+
+    def deepcopy(self):
+        '''
+        Deep copy the ledger.
+        '''
+        # deep copy the user list
+        user_list = []
+        for user in self.user_list:
+            user_list.append(UserDigest(
+                user.id, user.public_key, user.init_balance))
+
+        # deep copy the transactions
+        transactions = []
+        for transaction in self.transactions:
+            transactions.append(transaction.deepcopy())
+
+        return Ledger(user_list, transactions)

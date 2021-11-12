@@ -7,6 +7,7 @@ Under development
 2. Finish the code by implementing the functions with 'pass' or 'TODO' (Can use global search to find them)
 3. Use autopep8 to format the code (should be integrated in most of Python development tools, just open auto format in your IDEs)
 4. Use `skeleton.py` when creating new files
+5. Good to do: `FIXME` is some where that may have performance issues.
 
 ## Road map
 - [ ] transaction mechanism
