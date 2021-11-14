@@ -14,7 +14,9 @@ This file is the configs file for the project.
 
 class Config:
     # Public config
-    pass
+    network_row = 1000
+    network_col = 1000
+    users = 100
 
 
 class TimeConfig(Config):

@@ -15,6 +15,7 @@ from util import encrypt
 from .ledger import Ledger
 from .ledger import UserDigest
 from .transaction import Transaction
+from entity import ledger
 
 
 class User:
@@ -45,6 +46,7 @@ class User:
                 encrypt.sign_message(self.private_key, transaction.hash))
             if ledger.get_user_balance(self.id) >= amount:
                 # We need to add this transaction to the ledger immediately to ensure the hash correct
+                self.balance -= amount
                 ledger.append(transaction)
                 return True
             else:
@@ -74,7 +76,7 @@ class User:
                 return False
 
         # verify the balance, make sure everyone has a correct balance
-        for user in self.ledgers[0].user_list:
+        for (user_id, user) in self.ledgers[0].user_list.items():
             if ledger.get_user_balance(user.id, user.init_balance) < 0:
                 return False
 
@@ -87,7 +89,7 @@ class User:
         '''
         return UserDigest(self.id, self.public_key, self.balance)
 
-    def append_or_update(self, ledger):
+    def _append_or_update(self, ledger):
         '''
         Check if the ledger should be appended or replace the old one
         '''
@@ -123,7 +125,9 @@ class User:
         Return False if the ledger is invalid.
         '''
         if self.verify_ledger(ledger):
-            self.append_or_update(ledger)
+            self._append_or_update(ledger)
+            # update the balance
+            self.balance = ledger.get_user_balance(self.id)
             return True
         else:
             return False
@@ -141,8 +145,39 @@ class User:
         '''
         for ledger in self.ledgers:
             for receiver_id in receiver_list:
-                if network.send_ledger(self.id, receiver_id, ledger):
+                if network.send_ledger(self.id, receiver_id, ledger).result():
                     continue
                 else:
                     raise Exception(
                         "Failed to send ledger from {} to user {}".format(self.id, receiver_id))
+
+    def drop_ledger(self, ledger):
+        '''
+        Drop the ledger from the user.
+        '''
+        self.ledgers.remove(ledger)
+
+    def update_balane(self, ledger):
+        '''
+        Update the balance of the user.
+        TODO: We should only accept verified transactions and pending transactions from himself.
+        '''
+        self.balance = ledger.get_user_balance(self.id)
+
+    def deepcopy(self):
+        '''
+        Deep copy the user.
+        '''
+        ledgers = []
+        for ledger in self.ledgers:
+            ledgers.append(ledger.deepcopy())
+        user = User(self.id, ledgers, self.balance)
+        user.private_key = self.private_key
+        user.public_key = self.public_key
+        return user
+
+    def update(self, user):
+        '''
+        Update the user with the other user.
+        '''
+        self = user

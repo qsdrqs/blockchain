@@ -13,6 +13,7 @@ This module defines some entity classes
 import unittest
 from entity import *
 from util import *
+import time
 
 
 class TestTransaction(unittest.TestCase):
@@ -29,7 +30,6 @@ class TestTransaction(unittest.TestCase):
 
         # init network
         self.network = Network(100, 100, [self.user1, self.user2])
-
 
     def test_verify(self):
         # init transactions
@@ -90,3 +90,49 @@ class TestTransaction(unittest.TestCase):
 
         self.assertTrue(len(self.user1.ledgers) ==
                         len(self.user2.ledgers) == 2)
+
+
+class TestMultiThreadTransaction(unittest.TestCase):
+    def setUp(self):
+        # init users
+        self.user_list = []
+        for i in range(10):
+            self.user_list.append(User(i + 1, [], 1000))
+
+        # init ledger
+        user_digest = []
+        for user in self.user_list:
+            user_digest.append(user.generate_digest())
+
+        self.ledger = Ledger(
+            user_digest, [])
+
+        for user in self.user_list:
+            user.ledgers.append(self.ledger.deepcopy())
+
+        # init network
+        self.network = Network(100, 100, self.user_list)
+
+    def test_spread_ledger(self):
+        # init transactions
+        self.network.thread_pool.run_task_async(
+            self.user_list[0].id, self.user_list[0].add_transation, 2, 100)
+        self.network.thread_pool.run_task_async(
+            self.user_list[1].id, self.user_list[1].add_transation, 3, 200)
+        self.network.thread_pool.run_task_async(
+            self.user_list[2].id, self.user_list[2].add_transation, 1, 300)
+
+        # spread ledger
+        self.network.thread_pool.run_task_async(
+            self.user_list[0].id, self.user_list[0].send_ledgers, self.network, [2])
+        self.network.thread_pool.run_task_async(
+            self.user_list[1].id, self.user_list[1].send_ledgers, self.network, [3])
+        self.network.thread_pool.run_task_async(
+            self.user_list[2].id, self.user_list[2].send_ledgers, self.network, [1])
+
+        self.network.thread_pool.threadpool.shutdown()
+
+        self.assertTrue(len(self.user_list[0].ledgers)
+                        == len(self.user_list[1].ledgers)
+                        == len(self.user_list[2].ledgers)
+                        == 1)

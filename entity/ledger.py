@@ -42,9 +42,11 @@ class Ledger():
         Initialize the ledger.
 
         Args:
-            user_list: a list of user objects.
+            user_list: a list of user digest.
         '''
-        self.user_list = user_list
+        self.user_list = {}
+        for user in user_list:
+            self.user_list[user.id] = user
         self.transactions = init_transactions
 
     def get_user_public_key(self, id):
@@ -57,10 +59,7 @@ class Ledger():
         Returns:
             the user's public key.
         '''
-        for user in self.user_list:
-            if user.id == id:
-                return user.public_key
-        return None
+        return self.user_list[id].public_key
 
     def get_user_balance(self, id, init_balance=-1):
         '''
@@ -69,10 +68,7 @@ class Ledger():
         FIXME: Can be optimized.
         '''
         if init_balance == -1:
-            for user in self.user_list:
-                if user.id == id:
-                    init_balance = user.init_balance
-                    break
+            init_balance = self.user_list[id].init_balance
 
         balance = init_balance
         if len(self.transactions) == 0:
@@ -109,7 +105,7 @@ class Ledger():
         '''
         # deep copy the user list
         user_list = []
-        for user in self.user_list:
+        for (user_id, user) in self.user_list.items():
             user_list.append(UserDigest(
                 user.id, user.public_key, user.init_balance))
 

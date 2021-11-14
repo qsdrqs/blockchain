@@ -13,6 +13,7 @@ This file defines the network entity of the project.
 from .user import User
 import numpy as np
 import numpy.matlib as matlib
+from util.multithreading import ThreadPool
 
 
 class Network:
@@ -29,7 +30,9 @@ class Network:
             cols: number of columns in the network.
             users: user list in the network.
         '''
-        self.users = users
+        self.users = {}
+        for user in users:
+            self.users[user.id] = user
 
         # Initialize the network.
         self.network_matrix = matlib.empty((rows, cols), dtype=User)
@@ -37,6 +40,9 @@ class Network:
         # TODO: initalized as all True for testing. Should be all False.
         self.connect_matrix = matlib.ones(
             (len(users), len(users)), dtype=bool)
+
+        # Initialize the thread pool.
+        self.thread_pool = ThreadPool(users)
 
         # TODO: randomly set users in the network.
 
@@ -56,9 +62,9 @@ class Network:
         '''
         # TODO: To be implemented. Currently, return all other users.
         connected_users_id_list = []
-        for user in self.users:
-            if user.id != user_id:
-                connected_users_id_list.append(user.id)
+        for user_id in self.users:
+            if user_id != user_id:
+                connected_users_id_list.append(user_id)
 
         return connected_users_id_list
 
@@ -69,28 +75,26 @@ class Network:
         # TODO: To be implemented. Currently, return True.
         return True
 
-    def get_user_by_id(self, user_id):
+    def _get_user_by_id(self, user_id):
         '''
         Get user by id.
         '''
-        for user in self.users:
-            if user.id == user_id:
-                return user
-        return None
+        return self.users[user_id]
 
     def send_ledger(self, sender_id, receiver_id, ledger):
         '''
         Send a ledger to the receiver.
+        Return a boolean "future" indicating if the ledger is sent successfully.python匿名函数
+        The result can be accessed by the `result()` method.
         '''
         # get user by id.
-        sender = self.get_user_by_id(sender_id)
-        receiver = self.get_user_by_id(receiver_id)
+        sender = self._get_user_by_id(sender_id)
+        receiver = self._get_user_by_id(receiver_id)
         if sender is None or receiver is None:
-            return False
+            return self.thread_pool.threadpool.submit(lambda: False)
 
         # check if the sender and receiver are connected.
         if not self.is_connected(sender.id, receiver.id):
-            return False
+            return self.thread_pool.threadpool.submit(lambda: False)
 
-        # send the ledger.
-        return receiver.receive_ledger(ledger)
+        return self.thread_pool.run_task_async(receiver_id, receiver.receive_ledger, ledger, is_write=True)

@@ -11,7 +11,7 @@ Under development
 
 ## Road map
 - [x] transaction mechanism
-- [ ] multi threading support
+- [x] multi threading support
 - [ ] graph algorithms and ledger spread
 - [ ] delegates ranking
 - [ ] ledger persistence

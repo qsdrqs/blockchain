@@ -7,14 +7,15 @@ Authors: Tianyang Zhou <t7zhou@ucsd.edu>
          Weifan Ou <w3ou@ucsd.edu>
          Xuanxi Du <xud015@ucsd.edu>
 
-This module defines some entity classes
+This file define the attacker in the blockchain.
 
 '''
 
-# import classes
 from .user import User
-from .attacker import Attacker
-from .ledger import Ledger
-from .ledger import UserDigest
-from .network import Network
-from .transaction import Transaction
+
+
+class Attacker(User):
+    '''
+    Attacker class.
+    '''
+    pass
