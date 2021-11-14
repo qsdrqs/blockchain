@@ -43,19 +43,19 @@ class ThreadPool:
         Add a task to the thread pool asynchronously.
         Return the future object which can get the result from `result()`.
         '''
-        if self.executor[entity_id] is None or self.executor[entity_id].done():
+        if self.executor[entity_id] is not None and not self.executor[entity_id].done():
+            # The entity is not vacant.
+            self.executor[entity_id].result()
+
+        if is_write:
+            # entity is readable while writing
+            copy = self.entities[entity_id].deepcopy()
+            copy_executor = self.threadpool.submit(
+                entity_fun, *args, **kwargs)
+            copy_executor.add_done_callback(
+                lambda future: self.entities[entity_id].update(copy))
+            return copy_executor
+        else:
             self.executor[entity_id] = self.threadpool.submit(
                 entity_fun, *args, **kwargs)
-        else:
-            self.executor[entity_id].result()
-            if is_write:
-                self.executor[entity_id] = self.threadpool.submit(
-                    entity_fun, *args, **kwargs)
-            else:
-                # entity is readable while writing
-                copy = self.entities[entity_id].deepcopy()
-                copy_executor = self.threadpool.submit(
-                    entity_fun, *args, **kwargs)
-                copy_executor.add_done_callback(
-                    lambda future: self.entities[entity_id].update(copy))
-        return self.executor[entity_id]
+            return self.executor[entity_id]
