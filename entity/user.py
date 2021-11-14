@@ -31,7 +31,7 @@ class User:
         self.ledgers = init_ledger
         self.balance = init_balance
 
-    def add_transation(self, receiver_id, amount):
+    def add_transaction(self, receiver_id, amount):
         '''
         Add a transaction to every ledger of user.
         return:
@@ -128,9 +128,9 @@ class User:
             self._append_or_update(ledger)
             # update the balance
             self.balance = ledger.get_user_balance(self.id)
-            return True
         else:
-            return False
+            raise Exception(
+                "Failed to send ledger from others to user {}".format(self.id))
 
     def spread_ledgers(self, network):
         '''
@@ -145,11 +145,7 @@ class User:
         '''
         for ledger in self.ledgers:
             for receiver_id in receiver_list:
-                if network.send_ledger(self.id, receiver_id, ledger).result():
-                    continue
-                else:
-                    raise Exception(
-                        "Failed to send ledger from {} to user {}".format(self.id, receiver_id))
+                network.send_ledger(self.id, receiver_id, ledger)
 
     def drop_ledger(self, ledger):
         '''

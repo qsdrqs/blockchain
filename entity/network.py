@@ -91,10 +91,12 @@ class Network:
         sender = self._get_user_by_id(sender_id)
         receiver = self._get_user_by_id(receiver_id)
         if sender is None or receiver is None:
-            return self.thread_pool.threadpool.submit(lambda: False)
+            raise Exception(
+                "Failed to send ledger from {} to user {}".format(sender_id, receiver_id))
 
         # check if the sender and receiver are connected.
         if not self.is_connected(sender.id, receiver.id):
-            return self.thread_pool.threadpool.submit(lambda: False)
+            raise Exception(
+                "Failed to send ledger from {} to user {}".format(sender_id, receiver_id))
 
-        return self.thread_pool.run_task_async(receiver_id, receiver.receive_ledger, ledger, is_write=True)
+        return self.thread_pool.run_task_async(receiver_id, "receive_ledger", ledger, is_write=True)

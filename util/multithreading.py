@@ -34,28 +34,64 @@ class ThreadPool:
         self.entities = {}
         for entity in entities:
             self.entities[entity.id] = entity
-        self.executor = {}  # use dict to store executor
+        # signal
+        self.signal = {}  # use dict to store signals
         for entity in entities:
-            self.executor[entity.id] = None
+            self.signal[entity.id] = 0
 
-    def run_task_async(self, entity_id, entity_fun, * args, is_write=False, **kwargs):
+    def run_task_async(self, entity_id, entity_fun: str, * args, is_write=False, **kwargs):
         '''
         Add a task to the thread pool asynchronously.
         Return the future object which can get the result from `result()`.
+
+        No write on reading
+        No write on writing
+        Permit read on reading
+        Permit read on writing (CoW)add_done_callback
         '''
-        if self.executor[entity_id] is not None and not self.executor[entity_id].done():
-            # The entity is not vacant.
-            self.executor[entity_id].result()
+        if self.signal[entity_id] < 0:
+            raise Exception(
+                'FATAL: signal value of {} is less than zero!'.format(entity_id))
+
+        # get entity function
+        if hasattr(self.entities[entity_id], entity_fun):
+            reflection = getattr(self.entities[entity_id], entity_fun)
+        else:
+            raise Exception('Entity {} does not have function {}'.format(
+                self.entities[entity_id].__str__(), entity_fun))
 
         if is_write:
-            # entity is readable while writing
+            # check the lock
+            while self.signal[entity_id] > 0:
+                # The entity is not vacant.
+                # Wait until the entity is vacant.
+                time.sleep(0.1)
+
+            def cow_helper(self, entity_id, copy):
+                self.entities[entity_id].update(copy)
+                self.signal[entity_id] -= 1
+                print(self.signal[entity_id])
+
+                # copy on write
+            self.signal[entity_id] += 1  # add signal
+            print(str(entity_id) + ":" + str(self.signal[entity_id]))
             copy = self.entities[entity_id].deepcopy()
-            copy_executor = self.threadpool.submit(
-                entity_fun, *args, **kwargs)
-            copy_executor.add_done_callback(
-                lambda future: self.entities[entity_id].update(copy))
-            return copy_executor
+            copy_reflection = getattr(copy, entity_fun)
+            executor = self.threadpool.submit(
+                copy_reflection, *args, **kwargs)
+            executor.add_done_callback(
+                lambda future: cow_helper(self, entity_id, copy))
+            return executor
+
         else:
-            self.executor[entity_id] = self.threadpool.submit(
-                entity_fun, *args, **kwargs)
-            return self.executor[entity_id]
+            def read_helper(self):
+                self.signal[entity_id] -= 1
+                print(self.signal[entity_id])
+
+            self.signal[entity_id] += 1  # add signal
+            print(str(entity_id) + ":" + str(self.signal[entity_id]))
+            executor = self.threadpool.submit(
+                reflection, *args, **kwargs)
+            executor.add_done_callback(
+                lambda future: read_helper(self))
+            return executor

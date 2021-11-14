@@ -34,36 +34,36 @@ class TestTransaction(unittest.TestCase):
     def test_verify(self):
         # init transactions
         # we skip the spread process
-        self.user1.add_transation(2, 100)
+        self.user1.add_transaction(2, 100)
         self.user2.ledgers[0] = self.user1.ledgers[0].deepcopy()
 
-        self.user2.add_transation(1, 50)
+        self.user2.add_transaction(1, 50)
         self.user1.ledgers[0] = self.user2.ledgers[0].deepcopy()
 
         self.assertTrue(self.user1.verify_ledger(self.user1.ledgers[0]))
 
     def test_minus_balance(self):
-        self.assertFalse(self.user1.add_transation(2, 2000))
+        self.assertFalse(self.user1.add_transaction(2, 2000))
 
     def test_change_balance_manually(self):
         # init transactions
         # we skip the spread process
-        self.user1.add_transation(2, 100)
+        self.user1.add_transaction(2, 100)
         self.user2.ledgers[0] = self.user1.ledgers[0].deepcopy()
 
-        self.user2.add_transation(1, 50)
+        self.user2.add_transaction(1, 50)
         self.user1.ledgers[0] = self.user2.ledgers[0].deepcopy()
 
         # test user1 modify his init balance on ledger
         self.user1.ledgers[0].user_list[0].init_balance = 3000
-        self.assertTrue(self.user1.add_transation(2, 2000))
+        self.assertTrue(self.user1.add_transaction(2, 2000))
         self.assertFalse(self.user2.verify_ledger(self.user1.ledgers[0]))
 
     def test_spread_transaction(self):
         # init transactions
-        self.user1.add_transation(2, 100)
+        self.user1.add_transaction(2, 100)
         self.user1.spread_ledgers(self.network)
-        self.user2.add_transation(1, 50)
+        self.user2.add_transaction(1, 50)
         self.user2.spread_ledgers(self.network)
 
         def same_ledger(ledger1, ledger2):
@@ -83,8 +83,8 @@ class TestTransaction(unittest.TestCase):
 
     def test_append_ledger(self):
         # init transactions
-        self.user1.add_transation(2, 100)
-        self.user2.add_transation(1, 50)
+        self.user1.add_transaction(2, 100)
+        self.user2.add_transaction(1, 50)
         self.user1.spread_ledgers(self.network)
         self.user2.spread_ledgers(self.network)
 
@@ -116,19 +116,19 @@ class TestMultiThreadTransaction(unittest.TestCase):
     def test_spread_ledger(self):
         # init transactions
         self.network.thread_pool.run_task_async(
-            self.user_list[0].id, self.user_list[0].add_transation, 2, 100)
+            self.user_list[0].id, "add_transaction", 2, 100, is_write=True)
         self.network.thread_pool.run_task_async(
-            self.user_list[1].id, self.user_list[1].add_transation, 3, 200)
+            self.user_list[1].id, "add_transaction", 3, 200, is_write=True)
         self.network.thread_pool.run_task_async(
-            self.user_list[2].id, self.user_list[2].add_transation, 1, 300)
+            self.user_list[2].id, "add_transaction", 1, 300, is_write=True)
 
         # spread ledger
         self.network.thread_pool.run_task_async(
-            self.user_list[0].id, self.user_list[0].send_ledgers, self.network, [2])
+            self.user_list[0].id, "send_ledgers", self.network, [2, 3])
         self.network.thread_pool.run_task_async(
-            self.user_list[1].id, self.user_list[1].send_ledgers, self.network, [3])
+            self.user_list[1].id, "send_ledgers", self.network, [3, 1])
         self.network.thread_pool.run_task_async(
-            self.user_list[2].id, self.user_list[2].send_ledgers, self.network, [1])
+            self.user_list[2].id, "send_ledgers", self.network, [1, 2])
 
         self.network.thread_pool.threadpool.shutdown()
 
