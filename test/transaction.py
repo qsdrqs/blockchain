@@ -136,3 +136,17 @@ class TestMultiThreadTransaction(unittest.TestCase):
                         == len(self.user_list[1].ledgers)
                         == len(self.user_list[2].ledgers)
                         == 1)
+
+    def test_copy_on_write(self):
+        self.network.thread_pool.run_task_async(
+            self.user_list[0].id, "add_transaction", 2, 100, is_write=True)
+
+        self.network.thread_pool.run_task_async(
+            self.user_list[0].id, "send_ledgers", self.network, [2, 3])
+
+        self.network.thread_pool.threadpool.shutdown()
+
+        self.assertTrue(len(self.user_list[0].ledgers)
+                        == len(self.user_list[1].ledgers)
+                        == len(self.user_list[2].ledgers)
+                        == 1)

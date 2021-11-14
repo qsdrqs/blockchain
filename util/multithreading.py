@@ -70,11 +70,9 @@ class ThreadPool:
             def cow_helper(self, entity_id, copy):
                 self.entities[entity_id].update(copy)
                 self.signal[entity_id] -= 1
-                print(self.signal[entity_id])
 
                 # copy on write
             self.signal[entity_id] += 1  # add signal
-            print(str(entity_id) + ":" + str(self.signal[entity_id]))
             copy = self.entities[entity_id].deepcopy()
             copy_reflection = getattr(copy, entity_fun)
             executor = self.threadpool.submit(
@@ -86,10 +84,8 @@ class ThreadPool:
         else:
             def read_helper(self):
                 self.signal[entity_id] -= 1
-                print(self.signal[entity_id])
 
             self.signal[entity_id] += 1  # add signal
-            print(str(entity_id) + ":" + str(self.signal[entity_id]))
             executor = self.threadpool.submit(
                 reflection, *args, **kwargs)
             executor.add_done_callback(
