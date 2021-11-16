@@ -47,7 +47,7 @@ class ThreadPool:
         No write on reading
         No write on writing
         Permit read on reading
-        Permit read on writing (CoW)add_done_callback
+        Permit read on writing(by CoW)
         '''
         if self.signal[entity_id] < 0:
             raise Exception(

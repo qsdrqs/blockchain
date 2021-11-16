@@ -26,6 +26,8 @@ class Transaction:
         self.sender_id = sender_id
         self.receiver_id = receiver_id
         self.amount = amount
+        self.is_pending = False
+        self.delegates_sign = []
         if timestamp is None and hash is None and signature is None and ledger is not None:
             self.signature = None
             self.timestamp = time.time()
@@ -55,3 +57,7 @@ class Transaction:
     def deepcopy(self):
         return Transaction(self.sender_id, self.receiver_id,
                            self.amount, timestamp=self.timestamp, hash=self.hash, signature=self.signature)
+
+    def delegates_verify(self, signature):
+        self.delegates_sign.append(signature)
+        # if len(self.delegates_sign) == 

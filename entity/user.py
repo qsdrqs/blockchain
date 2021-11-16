@@ -23,13 +23,14 @@ class User:
     User class.
     '''
 
-    def __init__(self, id, init_ledger: list[Ledger], init_balance):
-        self.id = id
+    def __init__(self, id, init_ledger: list[Ledger], init_balance, radius=10):
+        self.id: int = id
         self.private_key, self.public_key = encrypt.generate_key_pair()
         # every user should hold a set of ledgers
         # becuase they may receive from different users
         self.ledgers = init_ledger
         self.balance = init_balance
+        self.radius = radius
 
     def add_transaction(self, receiver_id, amount):
         '''
@@ -115,7 +116,7 @@ class User:
                 self.ledgers.remove(my_ledger)
                 self.ledgers.append(ledger)
             else:
-                # append the ledger
+                # append the ledgerdebugOptions
                 self.ledgers.append(ledger)
 
     def receive_ledger(self, ledger):
@@ -126,8 +127,8 @@ class User:
         '''
         if self.verify_ledger(ledger):
             self._append_or_update(ledger)
-            # update the balance
-            self.balance = ledger.get_user_balance(self.id)
+            # update the balancedebugOptions
+            self.update_balance(ledger)
         else:
             raise Exception(
                 "Failed to send ledger from others to user {}".format(self.id))
@@ -143,9 +144,10 @@ class User:
         '''
         Send the ledger to specific receivers.
         '''
-        for ledger in self.ledgers:
-            for receiver_id in receiver_list:
-                network.send_ledger(self.id, receiver_id, ledger)
+        for receiver_id in receiver_list:
+            # we only need to calculate one ledger because
+            # the verified transactions by delegates should be the same
+            network.send_ledger(self.id, receiver_id, self.ledgers[0])
 
     def drop_ledger(self, ledger):
         '''
@@ -153,7 +155,7 @@ class User:
         '''
         self.ledgers.remove(ledger)
 
-    def update_balane(self, ledger):
+    def update_balance(self, ledger):
         '''
         Update the balance of the user.
         TODO: We should only accept verified transactions and pending transactions from himself.
@@ -176,4 +178,6 @@ class User:
         '''
         Update the user with the other user.
         '''
-        self = user
+        self.ledgers = user.ledgers
+        self.balance = user.balance
+        self.radius = user.radius

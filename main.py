@@ -11,7 +11,9 @@ This file the main file of the project.
 
 '''
 import unittest
-from test.transaction import TestMultiThreadTransaction
+#from test.transaction import TestMultiThreadTransaction
+#from test.transaction import TestTransaction
+#from test.util import TestUtil
 
 if __name__ == '__main__':
     unittest.main()

@@ -12,6 +12,7 @@ This file defines the network entity of the project.
 '''
 from .user import User
 import numpy as np
+import numpy.random as npr
 import numpy.matlib as matlib
 from util.multithreading import ThreadPool
 
@@ -36,6 +37,7 @@ class Network:
 
         # Initialize the network.
         self.network_matrix = matlib.empty((rows, cols), dtype=User)
+        # self.network_matrix[1,2] = self.users[1]
         # Initialize the connect matrix.
         # TODO: initalized as all True for testing. Should be all False.
         self.connect_matrix = matlib.ones(
@@ -53,8 +55,19 @@ class Network:
         '''
         Refresh the whold network.
         Rebuild the connect matrix and network matrix.
+        Step 1: randomly set users position in the network.
+        Step 2: build the connect matrix.
         '''
-        pass
+
+        def is_connected_graph(self):
+            '''
+            Check if the network is connected.
+            '''
+            return True
+
+        pass  # TODO
+        if not is_connected_graph(self):
+            self.refresh_network()
 
     def get_connected_users(self, user_id):
         '''
@@ -62,9 +75,9 @@ class Network:
         '''
         # TODO: To be implemented. Currently, return all other users.
         connected_users_id_list = []
-        for user_id in self.users:
-            if user_id != user_id:
-                connected_users_id_list.append(user_id)
+        for my_user_id in self.users:
+            if my_user_id != user_id:
+                connected_users_id_list.append(my_user_id)
 
         return connected_users_id_list
 
@@ -84,7 +97,7 @@ class Network:
     def send_ledger(self, sender_id, receiver_id, ledger):
         '''
         Send a ledger to the receiver.
-        Return a boolean "future" indicating if the ledger is sent successfully.python匿名函数
+        Return a boolean "future" indicating if the ledger is sent successfully.
         The result can be accessed by the `result()` method.
         '''
         # get user by id.
@@ -100,3 +113,11 @@ class Network:
                 "Failed to send ledger from {} to user {}".format(sender_id, receiver_id))
 
         return self.thread_pool.run_task_async(receiver_id, "receive_ledger", ledger, is_write=True)
+
+
+def test():
+    pass
+
+
+if __name__ == '__main__':
+    test()
