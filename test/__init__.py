@@ -11,10 +11,31 @@ This is unit test module for the project.
 
 '''
 import unittest
+from .transaction import TestTransaction
+from .transaction import TestMultiThreadTransaction
+from .util import TestUtil
 
 
 def run_all_tests():
     '''
     Run all unit tests.
     '''
-    unittest.main()
+    unittest.main(verbosity=2)
+
+
+def run_specific_test_class(class_name):
+    '''
+    Run a specific test class.
+    '''
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(class_name))
+    unittest.TextTestRunner(verbosity=2).run(suite)
+
+
+def run_specific_test_method(class_name, method_name: str):
+    '''
+    Run a specific test method.
+    '''
+    suite = unittest.TestSuite()
+    suite.addTest(class_name(method_name))
+    unittest.TextTestRunner(verbosity=2).run(suite)

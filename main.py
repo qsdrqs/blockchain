@@ -10,10 +10,9 @@ Authors: Tianyang Zhou <t7zhou@ucsd.edu>
 This file the main file of the project.
 
 '''
-import unittest
-#from test.transaction import TestMultiThreadTransaction
-#from test.transaction import TestTransaction
-#from test.util import TestUtil
+from test import *
 
 if __name__ == '__main__':
-    unittest.main()
+    # run_all_tests()
+    run_specific_test_class(TestUtil)
+    run_specific_test_method(TestTransaction, 'test_verify')
