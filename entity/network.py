@@ -55,18 +55,18 @@ class Network:
         # self.network_matrix[1,2] = self.users[1]
         # Initialize the connect matrix.
         # TODO: initalized as all True for testing. Should be all False.
-        self.connect_matrix = matlib.zeros((len(users), len(users)), dtype=bool)
+        self.connect_matrix = matlib.zeros(
+            (len(users), len(users)), dtype=bool)
         for _, user1 in users:
-            for _,user2 in users:
+            for _, user2 in users:
                 if user1 != user2:
-                    com_radius = min(user1.radius,user2.randius)
+                    com_radius = min(user1.radius, user2.randius)
                     vec1 = np.array(pos[user1])
                     vec2 = np.array(pos[user2])
-                    distance = np.linalg.norm(vec1,vec2)
+                    distance = np.linalg.norm(vec1, vec2)
                     if(distance <= com_radius):
-                        self.connect_matrix[user1.id,user2.id] = True
-                        self.connect_matrix[user2.id,user1.id] = True
-            
+                        self.connect_matrix[user1.id, user2.id] = True
+                        self.connect_matrix[user2.id, user1.id] = True
 
             # Initialize the thread pool.
         self.thread_pool = ThreadPool(users)
@@ -88,11 +88,11 @@ class Network:
             '''
             Check if the network is connected.
             '''
-            #initialize checked user dict
+            # initialize checked user dict
             user_checked = {}
             for user_id in self.users:
                 user_checked[user_id] = False
-            #bfs determine graph is connect or not
+            # bfs determine graph is connect or not
             q = Queue.Queue()
             q.put(list(self.users.keys())[0])
             user_checked[1] = True
@@ -104,7 +104,6 @@ class Network:
                     if user_checked[connected_user[i]] == False:
                         q.put(connected_user[i])
                         count = count + 1
-
 
             return count == len(self.users)
 
@@ -121,7 +120,7 @@ class Network:
         for my_user_id in self.users:
             # if my_user_id != user_id:
             #     connected_users_id_list.append(my_user_id)
-            if(self.connect_matrix[user_id,my_user_id]):
+            if(self.connect_matrix[user_id, my_user_id]):
                 connected_users_id_list.append(my_user_id)
 
         return connected_users_id_list
@@ -131,7 +130,7 @@ class Network:
         Check if two users are connected.
         '''
         # TODO: To be implemented. Currently, return True.
-        return self.connect_matrix[sender.id,reciever.id]
+        return self.connect_matrix[sender.id, reciever.id]
 
     def _get_user_by_id(self, user_id):
         '''
