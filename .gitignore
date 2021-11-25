@@ -8,3 +8,12 @@ custom.vim
 CS_SESSION
 .tasks
 .vimspector.json
+
+# nodejs files
+node_modules/
+package-lock.json
+.DS_Store
+/dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

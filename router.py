@@ -7,10 +7,14 @@ Authors: Tianyang Zhou <t7zhou@ucsd.edu>
          Weifan Ou <w3ou@ucsd.edu>
          Xuanxi Du <xud015@ucsd.edu>
 
-This file the main file of the project.
+This file the web router file that control the whole network
 
 '''
-from router import *
+from flask import Flask
 
-if __name__ == '__main__':
-    app.run(port=5000, debug=True)
+app = Flask(__name__)
+
+
+@app.route('/')
+def index():
+    return 'Hello, World!'
