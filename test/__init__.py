@@ -14,6 +14,7 @@ import unittest
 from .transaction import TestTransaction
 from .transaction import TestMultiThreadTransaction
 from .util import TestUtil
+from .transaction import TestDelegate
 
 
 def run_all_tests():

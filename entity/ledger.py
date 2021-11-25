@@ -16,6 +16,7 @@ And provide method to caculate the balance of every user.
 
 from . import *
 from .transaction import Transaction
+import statistics
 
 
 class UserDigest():
@@ -37,7 +38,8 @@ class Ledger():
     And provide method to caculate the balance of every user.
     '''
 
-    def __init__(self, user_list: list[UserDigest], init_transactions: list[Transaction]):
+    # def __init__(self, user_list: list[UserDigest], init_transactions: list[Transaction]):
+    def __init__(self, user_list, init_transactions):
         '''
         Initialize the ledger.
 
@@ -87,7 +89,24 @@ class Ledger():
         Calculate the weight of the user.
         '''
         # TODO: implement this method
-        pass
+        if user_id not in self.user_list:
+            return None
+        traned_user = set()
+        traned_amt = []
+        for transaction in self.transactions:
+            if transaction.is_pending:
+                continue
+            if transaction.sender_id == user_id:
+                traned_user.add(transaction.receiver_id)
+                traned_amt.append(transaction.amount)
+            elif transaction.receiver_id == user_id:
+                traned_user.add(transaction.sender_id)
+                traned_amt.append(transaction.amount)
+
+        if len(traned_amt) != 0:
+            return statistics.median(traned_amt) * len(traned_user)
+        else:
+            return 0
 
     def append(self, transaction: Transaction):
         '''
@@ -115,3 +134,6 @@ class Ledger():
             transactions.append(transaction.deepcopy())
 
         return Ledger(user_list, transactions)
+
+    def toString(self):
+        return f"\nLedger {id(self)}\n User list: {self.user_list.keys()}\n Transactions: {[t.toString() for t in self.transactions]}"

@@ -60,4 +60,7 @@ class Transaction:
 
     def delegates_verify(self, signature):
         self.delegates_sign.append(signature)
-        # if len(self.delegates_sign) == 
+        # if len(self.delegates_sign) ==
+
+    def toString(self):
+        return f"Time {self.timestamp}, from {self.sender_id} to {self.receiver_id}, amt {self.amount}\n"

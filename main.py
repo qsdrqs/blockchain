@@ -14,5 +14,7 @@ from test import *
 
 if __name__ == '__main__':
     # run_all_tests()
-    run_specific_test_class(TestUtil)
-    run_specific_test_method(TestTransaction, 'test_verify')
+    # run_specific_test_class(TestUtil)
+    #run_specific_test_method(TestTransaction, 'test_verify')
+    # run_specific_test_class(TestTransaction)
+    run_specific_test_class(TestDelegate)
