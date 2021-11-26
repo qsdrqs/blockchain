@@ -114,7 +114,7 @@ class TestDelegate(unittest.TestCase):
         # init network
         self.network = Network(100, 100, self.users)
 
-    def test_delegate_score(self):
+    def test_delegate_score1(self):
 
         def tran(f, t, amt):
             self.users[f-1].add_transaction(t, amt)
@@ -129,6 +129,26 @@ class TestDelegate(unittest.TestCase):
         delegate = self.users[0].choose_delegate()
         print(delegate)
         print(type(delegate))
+        self.assertTrue(len(delegate) == 1)
+        self.assertTrue(delegate[0] == 2)
+
+
+    def test_delegate_history(self):
+
+        def tran(f, t, amt):
+            self.users[f-1].add_transaction(t, amt)
+            self.users[0].spread_ledgers(self.network)
+            return
+        # init transactions
+
+
+        tran(1, 2, 60)
+        tran(2, 4, 60)
+        tran(5, 3, 70)
+        tran(3, 2, 100)
+        for i in range(5):
+            delegates = [user.choose_delegate() for user in self.users]
+            print(delegates)
 
 
 class TestMultiThreadTransaction(unittest.TestCase):
