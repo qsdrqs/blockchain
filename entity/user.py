@@ -17,6 +17,7 @@ from .ledger import UserDigest
 from .transaction import Transaction
 from entity import ledger
 import math
+import time
 
 
 class User:
@@ -33,6 +34,7 @@ class User:
         self.ledgers = init_ledger
         self.balance = init_balance
         self.radius = radius
+        self.delegate_history = []
 
     def add_transaction(self, receiver_id, amount):
         '''
@@ -89,10 +91,15 @@ class User:
         scores = {}
         for uid in self.ledgers[0].user_list.keys():
             scores[uid] = self.ledgers[0].calculate_weight(uid)
+            for i in range(1, 4):
+                if len(self.delegate_history) >= i and (uid in self.delegate_history[-i][1]):
+                    scores[uid] = scores[uid] * 0.8
+        # print(scores)
         result = list(dict(
             sorted(scores.items(), key=lambda item: item[1])).keys())
         result.reverse()
         num_delegate = int(math.ceil(len(result) * percentage / 100))
+        self.delegate_history.append((time.time, result[:num_delegate]))
         return result[:num_delegate]
 
     def generate_digest(self):
