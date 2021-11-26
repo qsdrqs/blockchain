@@ -13,14 +13,16 @@ This file is the test file of network.
 import unittest
 import entity.network
 from entity import *
+from random import randrange
 
 
 class TestNetwork(unittest.TestCase):
     def setUp(self):
         # init users
         self.user_list = []
-        for i in range(10):
-            self.user_list.append(User(i + 1, [], 1000))
+        for i in range(100):
+            self.user_list.append(User(i, [], 1000,randrange(10,20)))
+
 
         # init ledger
         user_digest = []
@@ -34,13 +36,13 @@ class TestNetwork(unittest.TestCase):
             user.ledgers.append(self.ledger.deepcopy())
 
         # init network
-        self.network = Network(100, 100, self.user_list)
+        self.network = Network(cols=10, rows=10, users=self.user_list)
 
     def test_refresh_network(self):
         self.network.refresh_network()
-        print(self.network.network_matrix)
-        self.network.refresh_network()
-        print(self.network.network_matrix)
+        print(self.network.connect_matrix)
+        # self.network.refresh_network()
+        # print(self.network.connect_matrix)
 
     def test_connect_users(self):
         # user1 and user2 are connected
