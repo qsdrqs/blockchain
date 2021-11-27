@@ -135,6 +135,9 @@ class Ledger():
 
         return Ledger(user_list, transactions)
 
+    def delegates_sign_len(self) -> int:
+        pass
+
     def toString(self):
         return f"\nLedger {id(self)}\n User list: {self.user_list.keys()}\n Transactions: {[t.toString() for t in self.transactions]}"
 
