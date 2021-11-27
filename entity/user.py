@@ -11,7 +11,6 @@ This file define the user in the blockchain.
 
 '''
 
-from entity.network import Network
 from util import encrypt
 from .ledger import Ledger
 from .ledger import UserDigest
@@ -213,7 +212,7 @@ class User:
             for my_ledger in self.ledgers:
                 my_hash = my_ledger.transactions[-1].hash.hexdigest()
                 if hash == my_hash:
-                    print(self.id + "has drop the ledger!")
+                    print(str(self.id) + "has drop the ledger!")
                     return
 
             self._append_or_update(ledger)
@@ -230,7 +229,7 @@ class User:
         user_id_list = network.get_connected_users(self.id)
         self.send_ledgers(network, user_id_list)
 
-    def send_ledgers(self, network: Network, receiver_list):
+    def send_ledgers(self, network, receiver_list):
         '''
         Send the ledger to specific receivers.
         '''
