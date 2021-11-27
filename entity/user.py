@@ -11,6 +11,7 @@ This file define the user in the blockchain.
 
 '''
 
+from entity.network import Network
 from util import encrypt
 from .ledger import Ledger
 from .ledger import UserDigest
@@ -66,8 +67,8 @@ class User:
         for i in range(len(ledger.transactions)):
             # verify the hash value
             transaction = ledger.transactions[i]
-            sub_ledger = ledger.transactions[:i]
-            if transaction.calculate_hash(sub_ledger).hexdigest() != transaction.hash.hexdigest():
+            last_transaction = ledger.transactions[i]
+            if transaction.calculate_hash(last_transaction).hexdigest() != transaction.hash.hexdigest():
                 return False
 
         # verify the signature
@@ -94,7 +95,6 @@ class User:
             for i in range(1, 4):
                 if len(self.delegate_history) >= i and (uid in self.delegate_history[-i][1]):
                     scores[uid] = scores[uid] * 0.8
-        # print(scores)
         result = list(dict(
             sorted(scores.items(), key=lambda item: item[1])).keys())
         result.reverse()
@@ -138,15 +138,26 @@ class User:
                 # append the ledgerdebugOptions
                 self.ledgers.append(ledger)
 
-    def receive_ledger(self, ledger):
+    def receive_ledger(self, ledger: Ledger):
         '''
         Receive the ledger from other users.
         Return True if the ledger is valid and added to the user.
         Return False if the ledger is invalid.
         '''
         if self.verify_ledger(ledger):
+            # judge whether the user already have a same one
+            # 1. the same chain
+            # 2. the same sign of delegates
+            hash = ledger.transactions[-1].hash.hexdigest()
+            for my_ledger in self.ledgers:
+                my_hash = my_ledger.transactions[-1].hash.hexdigest()
+                if hash == my_hash:
+                    print(self.id + "has drop the ledger!")
+                    return
+
+            
             self._append_or_update(ledger)
-            # update the balancedebugOptions
+            # update the balance
             self.update_balance(ledger)
         else:
             raise Exception(
@@ -159,7 +170,7 @@ class User:
         user_id_list = network.get_connected_users(self.id)
         self.send_ledgers(network, user_id_list)
 
-    def send_ledgers(self, network, receiver_list):
+    def send_ledgers(self, network: Network, receiver_list):
         '''
         Send the ledger to specific receivers.
         '''
