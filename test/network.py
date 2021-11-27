@@ -36,18 +36,27 @@ class TestNetwork(unittest.TestCase):
             user.ledgers.append(self.ledger.deepcopy())
 
         # init network
-        self.network = Network(cols=10, rows=10, users=self.user_list)
+        self.network = Network(cols=100, rows=100, users=self.user_list)
 
     def test_refresh_network(self):
         self.network.refresh_network()
         print(self.network.connect_matrix)
-        # self.network.refresh_network()
-        # print(self.network.connect_matrix)
+        previous = self.network.network_matrix.copy()
+        self.network.random_walk()
+        print(self.network.connect_matrix)
+        now = self.network.network_matrix
+        count = 0
+        for i in range(100):
+            for j in range(100):
+                if(previous[i,j] != now[i,j]):
+                    count += 1
+        print(count)
+        self.assertTrue(self.network.is_connected_graph())
 
-    def test_connect_users(self):
-        # user1 and user2 are connected
-        self.assertTrue(self.network.is_connected(
-            self.user_list[0], self.user_list[1]))
+    # def test_connect_users(self):
+    #     # user1 and user2 are connected
+    #     self.assertTrue(self.network.is_connected(
+    #         self.user_list[0], self.user_list[1]))
 
     def tearDown(self):
         pass
