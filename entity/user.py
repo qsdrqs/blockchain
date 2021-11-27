@@ -270,3 +270,6 @@ class User:
         self.ledgers = user.ledgers
         self.balance = user.balance
         self.radius = user.radius
+    
+    def get_ledgers_str(self):
+        return "\n".join(str(l) for l in self.ledgers)

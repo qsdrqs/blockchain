@@ -176,12 +176,13 @@ class TestMerge2(unittest.TestCase):
         ledger_1.transactions[0].is_pending = False
         ledger_1.transactions[1].is_pending = False
         self.users[0].ledgers.append(ledger_1.deepcopy())
-        print("Local ledger: \n" + self.users[0].ledgers[0])
+        print("\n")
+        print("Local ledger: \n" + str(self.users[0].ledgers[0]))
         ledger_1.transactions[2].is_pending = False
-        print("In ledger: \n" + ledger_1)
+        print("In ledger: \n" + str(ledger_1))
         self.users[0].handle_new_ledger(ledger_1)
-        print("Local ledger: \n" + self.users[0].ledgers[0])
-        print("BP2")
+        print("----- Merging Ledger -----")
+        print("Local ledger: \n" + str(self.users[0].ledgers[0]))
     
     def test_2(self):
         ledger_1 = self.ledger.deepcopy()
@@ -200,7 +201,8 @@ class TestMerge2(unittest.TestCase):
         ledger_1.transactions[0].is_pending = False
         ledger_1.transactions[1].is_pending = False
         self.users[0].ledgers.append(ledger_1.deepcopy())
-        print("BP1")
+        print("\n")
+        print("Local ledger: \n" + self.users[0].get_ledgers_str())
         ledger_1.transactions.remove(ledger_1.transactions[-1])
         ledger_1.transactions.remove(ledger_1.transactions[-1])
         tE = Transaction(1, 2, 50, ledger_1)
@@ -209,8 +211,10 @@ class TestMerge2(unittest.TestCase):
         tF = Transaction(1, 2, 60, ledger_1)
         tF.signature = 0
         ledger_1.append(tF)
+        print("In ledger: \n" + str(ledger_1))
         self.users[0].handle_new_ledger(ledger_1)
-        print("BP2")
+        print("----- Merging Ledger -----")
+        print("Local ledger: \n" + self.users[0].get_ledgers_str())
 
     def test_3(self):
         ledger_1 = self.ledger.deepcopy()
