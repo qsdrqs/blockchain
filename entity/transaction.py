@@ -60,5 +60,5 @@ class Transaction:
         self.delegates_sign[did] = signature
         # if len(self.delegates_sign) ==
 
-    def toString(self):
+    def __str__(self):
         return f"Time {self.timestamp}, from {self.sender_id} to {self.receiver_id}, amt {self.amount}, pend {self.is_pending}\n"

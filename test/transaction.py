@@ -176,9 +176,11 @@ class TestMerge2(unittest.TestCase):
         ledger_1.transactions[0].is_pending = False
         ledger_1.transactions[1].is_pending = False
         self.users[0].ledgers.append(ledger_1.deepcopy())
-        print("BP1")
+        print("Local ledger: \n" + self.users[0].ledgers[0])
         ledger_1.transactions[2].is_pending = False
+        print("In ledger: \n" + ledger_1)
         self.users[0].handle_new_ledger(ledger_1)
+        print("Local ledger: \n" + self.users[0].ledgers[0])
         print("BP2")
     
     def test_2(self):
