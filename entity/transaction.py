@@ -31,7 +31,10 @@ class Transaction:
         if timestamp is None and hash is None and signature is None and ledger is not None:
             self.signature = None
             self.timestamp = time.time()
-            self.hash = self.calculate_hash(ledger.transactions[-1])
+            if (len(ledger.transactions) == 0):
+                self.hash = self.calculate_hash(None)
+            else:
+                self.hash = self.calculate_hash(ledger.transactions[-1])
         elif timestamp is not None and hash is not None and signature is not None and ledger is None:
             self.signature = signature
             self.timestamp = timestamp
@@ -48,9 +51,12 @@ class Transaction:
     def calculate_hash(self, last_transaction):
         self_message = str(
             self.sender_id + self.receiver_id + self.timestamp + self.amount).encode()
-        last_transaction_messages = last_transaction.hash.hexdigest().encode()
+        if last_transaction is None:
+            last_message = b''
+        else:
+            last_message = last_transaction.hash.hexdigest().encode()
 
-        return util.hash_message(last_transaction_messages+self_message)
+        return util.hash_message(last_message+self_message)
 
     def deepcopy(self):
         return Transaction(self.sender_id, self.receiver_id,
