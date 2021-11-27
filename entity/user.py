@@ -155,7 +155,6 @@ class User:
                     print(self.id + "has drop the ledger!")
                     return
 
-            
             self._append_or_update(ledger)
             # update the balance
             self.update_balance(ledger)
