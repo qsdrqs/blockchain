@@ -293,13 +293,3 @@ class Network:
             self.network_matrix[initial_pos[0], initial_pos[1]] = None
             self.pos[walk_id] = final_pos
 
-
-def test():
-    pass
-
-
-if __name__ == '__main__':
-    test()
-
-
-# 卡在 refresh里了，无法构建出连通图
