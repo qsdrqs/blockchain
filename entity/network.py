@@ -13,11 +13,11 @@ This file defines the network entity of the project.
 from .user import User
 import numpy as np
 import numpy.random as npr
-import numpy.matlib as matlib
-import queue
 from random import randrange
-from config import Config
+import queue
+import numpy.matlib as matlib
 from util.multithreading import ThreadPool
+from config import Config
 
 
 class Network:
@@ -65,7 +65,7 @@ class Network:
         # self.network_matrix[1,2] = self.users[1]
         # Initialize the connect matrix.
         # TODO: initalized as all True for testing. Should be all False.
-        self.connect_matrix = matlib.zeros(
+        self.connect_matrix = matlib.ones(
             (len(users), len(users)), dtype=bool)
         for user1 in self.users.keys():
             for user2 in self.users.keys():
@@ -130,6 +130,30 @@ class Network:
                     if(distance <= com_radius):
                         self.connect_matrix[user1, user2] = True
                         self.connect_matrix[user2, user1] = True
+
+        def is_connected_graph(self):
+            '''
+            Check if the network is connected.
+            '''
+            # initialize checked user dict
+            user_checked = {}
+            for user_id in self.users:
+                user_checked[user_id] = False
+            # bfs determine graph is connect or not
+            q = queue.Queue()
+            q.put(list(self.users.keys())[0])
+            user_checked[0] = True
+            count = 1
+            while not q.empty():
+                print('dxx')
+                current_id = q.get()
+                connected_user = self.get_connected_users(current_id)
+                for i in range(len(connected_user)):
+                    if user_checked[connected_user[i]] == False:
+                        q.put(connected_user[i])
+                        user_checked[connected_user[i]] = True
+                        count = count + 1
+            return count == self.user_count
 
         # pass  # TODO
         while not self.is_connected_graph():

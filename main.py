@@ -19,4 +19,6 @@ if __name__ == '__main__':
     # run_specific_test_class(TestTransaction)
     run_specific_test_class(TestNetwork)
     #run_specific_test_class(TestDelegate)
-    run_specific_test_method(TestDelegate, 'test_delegate_history')
+    #run_specific_test_method(TestDelegate, 'test_delegate_history')
+    #run_specific_test_method(TestMerge, 'test_2')
+    run_specific_test_method(TestMerge2, 'test_4')
