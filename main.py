@@ -10,7 +10,7 @@ Authors: Tianyang Zhou <t7zhou@ucsd.edu>
 This file the main file of the project.
 
 '''
-from router import *
+from test.visible import *
 
 if __name__ == '__main__':
-    socketio.run(app, port=5000, debug=False)
+    run()

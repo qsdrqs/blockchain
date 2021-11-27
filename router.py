@@ -21,8 +21,9 @@ allow_origins = [
 socketio = SocketIO(app, cors_allowed_origins=allow_origins)
 CORS(app, origins=allow_origins)
 
-myNetwork = Network(3, 3, [User(1, [], 1), User(2, [], 1)])
-room = 1
+network_entity = Network(
+    4, 4, [User(1, [], 1), User(2, [], 1), User(3, [], 1)])
+connect_magic_number = 64  # can be everything
 
 
 @socketio.on('connect_front', namespace='/ws')
@@ -31,14 +32,8 @@ def connect():
     Handle the connection event
     '''
     print("Connected")
-    join_room(room)
-    # START TESTING
-    network = myNetwork
-    network_matrix = network.network_matrix
-    network_matrix[1, 1] = network.users[1]
-    network_matrix[2, 2] = network.users[2]
-    # END TESTING
-    update_topo(myNetwork)
+    join_room(connect_magic_number)
+    update_topo(network_entity)
 
 
 def update_topo(network):
@@ -58,7 +53,7 @@ def update_topo(network):
                         "x": i*100, "y": j*100}, "connected_users": connected_users.__str__()})
 
     print(coordinates)
-    emit("update_topo", coordinates, namespace='/ws', to=room)
+    emit("update_topo", coordinates, namespace='/ws', to=connect_magic_number)
 
 
 def spread_ledger(src, dest):
@@ -66,7 +61,7 @@ def spread_ledger(src, dest):
     Spread the ledger to the destination user
     '''
     emit("spread_ledger", {"src": src, "dest": dest},
-         namespace='/ws', to=room)
+         namespace='/ws', to=connect_magic_number)
 
 
 @app.route('/user_list')
@@ -74,34 +69,5 @@ def get_user_list():
     '''
     Get all user list in the network
     '''
-    users = myNetwork.users
+    users = network_entity.users
     return list(users.keys()).__str__()
-
-
-###############################################################################
-# Tests
-@app.route('/test_ledger')
-def test_ledger():
-    '''
-    Test the ledger
-    '''
-    src = request.args.get('src')
-    dest = request.args.get('dest')
-    spread_ledger(src, dest)
-    return "OK"
-
-
-@app.route('/test_update')
-def test_update():
-    '''
-    Test the update
-    '''
-    network = myNetwork
-    network_matrix = network.network_matrix
-    network_matrix[1, 1] = None
-    network_matrix[2, 2] = None
-    network_matrix[2, 1] = network.users[1]
-    network_matrix[1, 2] = network.users[2]
-    print("fuck")
-    update_topo(network)
-    return "OK"

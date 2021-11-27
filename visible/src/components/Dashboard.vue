@@ -63,54 +63,53 @@ export default {
        * Let the edge be highlighted
        * when the ledger is transporting
        */
-      cy.$('#' + element.data.id).toggleClass('highlighted');
+      cy.$('#' + element.data.id).toggleClass('highlighted')
       setTimeout(() => {
-        cy.$('#' + element.data.id).toggleClass('highlighted');
-      }, 800);
+        cy.$('#' + element.data.id).toggleClass('highlighted')
+      }, 800)
     },
     init_hook (cy) {
       /*
        * initailize the whole graph
        */
       // init the nodes
-      let that = this;
+      let that = this
       this.socket_io = io('ws://127.0.0.1:5000/ws')
       this.axios.get('http://127.0.0.1:5000/user_list').then((response) => {
         for (let i = 0; i < response.data.length; i++) {
           that.elements.nodes.push(
             { data: { id: response.data[i]}, position: {x: 0, y: 0}}
-          );
+          )
         }
       })
 
       // init the position
       this.socket_io.on('update_topo', (coordinates) => {
-        that.elements.edges = [];
+        that.elements.edges = []
         for (let i = 0; i < coordinates.length; i++) {
-          coordinates[i].connected_users = JSON.parse(coordinates[i].connected_users);
+          coordinates[i].connected_users = JSON.parse(coordinates[i].connected_users)
           cy.$('#' + coordinates[i].user_id).position(coordinates[i].position)
           // init the edges
           for (let j = 0; j < coordinates[i].connected_users.length; j++) {
             that.elements.edges.push(
               { data: { id: coordinates[i].user_id + 'to' + coordinates[i].connected_users[j], source: coordinates[i].user_id, target: coordinates[i].connected_users[j] }}
-            );
+            )
           }
         }
-      });
-      this.socket_io.emit('connect_front');
+      })
+      this.socket_io.emit('connect_front')
 
       // set ledger spread listener
       this.socket_io.on('spread_ledger', (data) => {
-          let element = null;
-          for (let i = 0; i < that.elements.edges.length; i++) {
-            if(that.elements.edges[i].data.source == data.src
-                && that.elements.edges[i].data.target == data.dest) {
-              element = that.elements.edges[i];
-            }
+        let element = null
+        for (let i = 0; i < that.elements.edges.length; i++) {
+          if (that.elements.edges[i].data.source == data.src &&
+                that.elements.edges[i].data.target == data.dest) {
+            element = that.elements.edges[i]
           }
-          that.letbehighlight(cy, element);
-      });
-
+        }
+        that.letbehighlight(cy, element)
+      })
     }
   }
 }
