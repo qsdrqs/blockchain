@@ -11,8 +11,11 @@
     "build": "node build/build.js"
   },
   "dependencies": {
+    "axios": "^0.24.0",
     "cytoscape": "^3.20.0",
+    "socket.io-client": "^4.4.0",
     "vue": "^2.5.2",
+    "vue-axios": "^3.4.0",
     "vue-chartjs": "^3.5.1",
     "vue-cytoscape": "^1.0.8",
     "vue-router": "^3.0.1"

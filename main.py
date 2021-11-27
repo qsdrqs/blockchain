@@ -13,4 +13,4 @@ This file the main file of the project.
 from router import *
 
 if __name__ == '__main__':
-    app.run(port=5000, debug=True)
+    socketio.run(app, port=5000, debug=False)

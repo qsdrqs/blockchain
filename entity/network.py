@@ -113,11 +113,3 @@ class Network:
                 "Failed to send ledger from {} to user {}".format(sender_id, receiver_id))
 
         return self.thread_pool.run_task_async(receiver_id, "receive_ledger", ledger, is_write=True)
-
-
-def test():
-    pass
-
-
-if __name__ == '__main__':
-    test()

@@ -1,6 +1,6 @@
 <template>
   <div class="dashboard">
-    <cytoscape ref="cy" :config="config" >
+    <cytoscape ref="cy" :config="config" :afterCreated="init_hook">
       <cy-element v-for="element in elements.nodes" :key="element.data.id" :sync=true :definition="element" v-on:click="letbehighlight($event,element)" />
       <cy-element v-for="element in elements.edges" :key="element.data.id" :sync=true :definition="element" v-on:click="letbehighlight($event,element)" />
     </cytoscape>
@@ -8,6 +8,7 @@
 </template>
 
 <script>
+import io from 'socket.io-client'
 
 export default {
   name: 'Dashboard',
@@ -32,11 +33,13 @@ export default {
           }, {
             selector: '.highlighted',
             style: {
+              'curve-style': 'bezier',
               'background-color': '#61bffc',
               'line-color': '#61bffc',
               'target-arrow-color': '#61bffc',
               'transition-property': 'background-color, line-color, target-arrow-color',
-              'transition-duration': '0.5s'
+              'transition-duration': '0.5s',
+              'z-index': 1000
             }
           }
         ],
@@ -47,36 +50,69 @@ export default {
       },
       elements: {
         nodes: [
-          { data: { id: 'a'}},
-          { data: { id: 'b'}},
-          { data: { id: 'c'}},
-          { data: { id: 'd'}},
-          { data: { id: 'e'}},
-          { data: { id: 'f'}}
         ],
         edges: [
-          { data: { id: 'ae', source: 'a', target: 'e' } },
-          { data: { id: 'ab', source: 'a', target: 'b' } },
-          { data: { id: 'be', source: 'b', target: 'e' } },
-          { data: { id: 'bc', source: 'b', target: 'c' } },
-          { data: { id: 'ce', source: 'c', target: 'e' } },
-          { data: { id: 'cd', source: 'c', target: 'd' } },
-          { data: { id: 'de', source: 'd', target: 'e' } }
         ]
-      }
-    }
-  },
-  mounted () {
-    for (let i = 0; i < this.elements.nodes.length; i++) {
-      this.elements.nodes[i].position = {x: Math.random() * 1000, y: Math.random() * 500 + 100}
+      },
+      socket_io: null
     }
   },
   methods: {
-    letbehighlight (event, element) {
-      event.cy.$("#"+element.data.id).toggleClass('highlighted');
+    letbehighlight (cy, element) {
+      /*
+       * Let the edge be highlighted
+       * when the ledger is transporting
+       */
+      cy.$('#' + element.data.id).toggleClass('highlighted');
+      setTimeout(() => {
+        cy.$('#' + element.data.id).toggleClass('highlighted');
+      }, 800);
+    },
+    init_hook (cy) {
+      /*
+       * initailize the whole graph
+       */
+      // init the nodes
+      let that = this;
+      this.socket_io = io('ws://127.0.0.1:5000/ws')
+      this.axios.get('http://127.0.0.1:5000/user_list').then((response) => {
+        for (let i = 0; i < response.data.length; i++) {
+          that.elements.nodes.push(
+            { data: { id: response.data[i]}, position: {x: 0, y: 0}}
+          );
+        }
+      })
+
+      // init the position
+      this.socket_io.on('update_topo', (coordinates) => {
+        that.elements.edges = [];
+        for (let i = 0; i < coordinates.length; i++) {
+          coordinates[i].connected_users = JSON.parse(coordinates[i].connected_users);
+          cy.$('#' + coordinates[i].user_id).position(coordinates[i].position)
+          // init the edges
+          for (let j = 0; j < coordinates[i].connected_users.length; j++) {
+            that.elements.edges.push(
+              { data: { id: coordinates[i].user_id + 'to' + coordinates[i].connected_users[j], source: coordinates[i].user_id, target: coordinates[i].connected_users[j] }}
+            );
+          }
+        }
+      });
+      this.socket_io.emit('connect_front');
+
+      // set ledger spread listener
+      this.socket_io.on('spread_ledger', (data) => {
+          let element = null;
+          for (let i = 0; i < that.elements.edges.length; i++) {
+            if(that.elements.edges[i].data.source == data.src
+                && that.elements.edges[i].data.target == data.dest) {
+              element = that.elements.edges[i];
+            }
+          }
+          that.letbehighlight(cy, element);
+      });
+
     }
   }
-
 }
 </script>
 
