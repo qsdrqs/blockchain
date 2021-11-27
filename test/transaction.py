@@ -66,6 +66,7 @@ class TestTransaction(unittest.TestCase):
         self.user1.spread_ledgers(self.network)
         self.user2.add_transaction(1, 50)
         self.user2.spread_ledgers(self.network)
+        print(self.user2.ledgers[0].toString())
 
         def same_ledger(ledger1, ledger2):
             # we only check the transactions
@@ -93,6 +94,234 @@ class TestTransaction(unittest.TestCase):
 
         self.assertTrue(len(self.user1.ledgers) ==
                         len(self.user2.ledgers) == 2)
+
+
+class TestMerge(unittest.TestCase):
+    def setUp(self):
+        # init users
+        num_user = 3
+        self.users = []
+        for i in range(1, num_user + 1):
+            self.users.append(User(i, [], 1000))
+
+        # init ledger
+        self.ledger = Ledger(
+            [user.generate_digest() for user in self.users], [])
+
+        for user in self.users:
+            user.ledgers.append(self.ledger.deepcopy())
+
+        # init network
+        self.network = Network(10, 10, self.users)
+
+    def test_1(self):
+
+        def tran(f, t, amt):
+            self.users[f-1].add_transaction(t, amt)
+            self.users[0].spread_ledgers(self.network)
+            return
+        tran(1, 2, 100)
+        tran(2, 3, 60)
+        print("BP1")
+        self.users[0].ledgers[0].transactions[0].is_pending = False
+        print("BP2")
+        in_ledger1 = self.users[0].ledgers[0].deepcopy()
+        in_ledger1.transactions[1].is_pending = False
+        print("BP3")
+        self.users[0].handle_new_ledger(in_ledger1)
+        print("BP4")
+    
+    def test_2(self):
+        def tran(f, t, amt):
+            self.users[f-1].add_transaction(t, amt)
+            self.users[0].spread_ledgers(self.network)
+            return
+        tran(1, 2, 100)
+        tran(2, 3, 60)
+        self.users[0].ledgers[0].transactions[0].is_pending = False
+        self.users[0].ledgers[0].transactions[1].is_pending = False
+        in_ledger1 = self.users[0].ledgers[0].deepcopy()
+        in_ledger1.transactions[1].is_pending = True
+        print("BP3")
+        self.users[0].handle_new_ledger(in_ledger1)
+        print("BP4")
+
+
+class TestMerge2(unittest.TestCase):
+    def setUp(self):
+        # init users
+        num_user = 3
+        self.users = []
+        for i in range(1, num_user + 1):
+            self.users.append(User(i, [], 1000))
+
+        # init ledger
+        self.ledger = Ledger(
+            [user.generate_digest() for user in self.users], [])
+    
+    def test_1(self):
+        ledger_1 = self.ledger.deepcopy()
+        tA = Transaction(1, 2, 30, ledger_1)
+        tA.signature = 0
+        ledger_1.append(tA)
+        tB = Transaction(1, 2, 40, ledger_1)
+        tB.signature = 0
+        ledger_1.append(tB)
+        tC = Transaction(1, 2, 50, ledger_1)
+        tC.signature = 0
+        ledger_1.append(tC)
+        tD = Transaction(1, 2, 60, ledger_1)
+        tD.signature = 0
+        ledger_1.append(tD)
+        ledger_1.transactions[0].is_pending = False
+        ledger_1.transactions[1].is_pending = False
+        self.users[0].ledgers.append(ledger_1.deepcopy())
+        print("BP1")
+        ledger_1.transactions[2].is_pending = False
+        self.users[0].handle_new_ledger(ledger_1)
+        print("BP2")
+    
+    def test_2(self):
+        ledger_1 = self.ledger.deepcopy()
+        tA = Transaction(1, 2, 30, ledger_1)
+        tA.signature = 0
+        ledger_1.append(tA)
+        tB = Transaction(1, 2, 40, ledger_1)
+        tB.signature = 0
+        ledger_1.append(tB)
+        tC = Transaction(1, 2, 50, ledger_1)
+        tC.signature = 0
+        ledger_1.append(tC)
+        tD = Transaction(1, 2, 60, ledger_1)
+        tD.signature = 0
+        ledger_1.append(tD)
+        ledger_1.transactions[0].is_pending = False
+        ledger_1.transactions[1].is_pending = False
+        self.users[0].ledgers.append(ledger_1.deepcopy())
+        print("BP1")
+        ledger_1.transactions.remove(ledger_1.transactions[-1])
+        ledger_1.transactions.remove(ledger_1.transactions[-1])
+        tE = Transaction(1, 2, 50, ledger_1)
+        tE.signature = 0
+        ledger_1.append(tE)
+        tF = Transaction(1, 2, 60, ledger_1)
+        tF.signature = 0
+        ledger_1.append(tF)
+        self.users[0].handle_new_ledger(ledger_1)
+        print("BP2")
+
+    def test_3(self):
+        ledger_1 = self.ledger.deepcopy()
+        tA = Transaction(1, 2, 30, ledger_1)
+        tA.signature = 0
+        ledger_1.append(tA)
+        tB = Transaction(1, 2, 40, ledger_1)
+        tB.signature = 0
+        ledger_1.append(tB)
+        tC = Transaction(1, 2, 50, ledger_1)
+        tC.signature = 0
+        ledger_1.append(tC)
+        tD = Transaction(1, 2, 60, ledger_1)
+        tD.signature = 0
+        ledger_1.append(tD)
+        ledger_1.transactions[0].is_pending = False
+        ledger_1.transactions[1].is_pending = False
+        self.users[0].ledgers.append(ledger_1.deepcopy())
+        print("BP1")
+        ledger_1.transactions.remove(ledger_1.transactions[-1])
+        tE = Transaction(1, 2, 70, ledger_1)
+        tE.signature = 0
+        ledger_1.append(tE)
+        self.users[0].handle_new_ledger(ledger_1)
+        print("BP2")
+
+    def test_4(self):
+        ledger_1 = self.ledger.deepcopy()
+        tA = Transaction(1, 2, 30, ledger_1)
+        tA.signature = 0
+        ledger_1.append(tA)
+        tB = Transaction(1, 2, 40, ledger_1)
+        tB.signature = 0
+        ledger_1.append(tB)
+        tC = Transaction(1, 2, 50, ledger_1)
+        tC.signature = 0
+        ledger_1.append(tC)
+        tD = Transaction(1, 2, 60, ledger_1)
+        tD.signature = 0
+        ledger_1.append(tD)
+        ledger_1.transactions[0].is_pending = False
+        ledger_1.transactions[1].is_pending = False
+        self.users[0].ledgers.append(ledger_1.deepcopy())
+        print("BP1")
+        ledger_1.transactions.remove(ledger_1.transactions[-1])
+        tE = Transaction(1, 2, 70, ledger_1)
+        tE.signature = 0
+        ledger_1.append(tE)
+        ledger_1.transactions[2].is_pending = False
+        self.users[0].handle_new_ledger(ledger_1)
+        print("BP2")
+
+
+class TestDelegate(unittest.TestCase):
+    def setUp(self):
+        # init users
+        num_user = 5
+        self.users = []
+        for i in range(1, num_user + 1):
+            self.users.append(User(i, [], 1000))
+
+        # init ledger
+        self.ledger = Ledger(
+            [user.generate_digest() for user in self.users], [])
+
+        for user in self.users:
+            user.ledgers.append(self.ledger.deepcopy())
+
+        # init network
+        self.network = Network(100, 100, self.users)
+
+    def test_delegate_score1(self):
+
+        def tran(f, t, amt):
+            self.users[f-1].add_transaction(t, amt)
+            self.users[0].spread_ledgers(self.network)
+            return
+        # init transactions
+        tran(1, 2, 100)
+        tran(2, 4, 60)
+        tran(5, 3, 70)
+        tran(3, 2, 100)
+        print(self.users[0].ledgers[0].toString())
+        delegate = self.users[0].choose_delegate()
+        print(delegate)
+        print(type(delegate))
+        self.assertTrue(len(delegate) == 1)
+        self.assertTrue(delegate[0] == 2)
+
+
+    def test_delegate_history(self):
+
+        def tran(f, t, amt):
+            self.users[f-1].add_transaction(t, amt)
+            self.users[0].spread_ledgers(self.network)
+            print(f"Transaction from {f} to {t}, amt: {amt}")
+            return
+        # init transactions
+
+        delegates = [user.choose_delegate() for user in self.users]
+        print(delegates)
+
+        tran(1, 2, 60)
+        tran(2, 4, 60)
+        tran(5, 3, 70)
+        tran(3, 2, 100)
+        for i in range(5):
+            time.sleep(0.05)
+            delegates = [user.choose_delegate() for user in self.users]
+            print(delegates)
+
+        print(self.users[0].delegate_history)
+        print(self.users[1].delegate_history)
 
 
 class TestMultiThreadTransaction(unittest.TestCase):

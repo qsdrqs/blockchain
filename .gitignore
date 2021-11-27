@@ -8,6 +8,7 @@ custom.vim
 CS_SESSION
 .tasks
 .vimspector.json
+.vscode/
 
 # nodejs files
 node_modules/

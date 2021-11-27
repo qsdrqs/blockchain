@@ -10,7 +10,15 @@ Authors: Tianyang Zhou <t7zhou@ucsd.edu>
 This file the main file of the project.
 
 '''
-from test.visible import *
+from test import *
 
 if __name__ == '__main__':
-    run()
+    # run_all_tests()
+    # run_specific_test_class(TestUtil)
+    #run_specific_test_method(TestTransaction, 'test_verify')
+    # run_specific_test_class(TestTransaction)
+    run_specific_test_class(TestNetwork)
+    #run_specific_test_class(TestDelegate)
+    #run_specific_test_method(TestDelegate, 'test_delegate_history')
+    #run_specific_test_method(TestMerge, 'test_2')
+    run_specific_test_method(TestMerge2, 'test_4')
