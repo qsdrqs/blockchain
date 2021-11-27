@@ -25,7 +25,6 @@ class User:
     User class.
     '''
 
-    # def __init__(self, id, init_ledger: list[Ledger], init_balance, radius=10):
     def __init__(self, id, init_ledger, init_balance, radius=10):
         self.id: int = id
         self.private_key, self.public_key = encrypt.generate_key_pair()

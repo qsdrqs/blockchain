@@ -88,7 +88,6 @@ class Ledger():
         '''
         Calculate the weight of the user.
         '''
-        # TODO: implement this method
         if user_id not in self.user_list:
             return None
         traned_user = set()
@@ -136,8 +135,20 @@ class Ledger():
         return Ledger(user_list, transactions)
 
     def delegates_sign_len(self) -> int:
-        pass
+        '''
+        Get the number of delegates that sign the ledger.
+        '''
+        for i in range(len(self.transactions)):
+            if self.transactions[-i - 1].is_pending:
+                continue
+            return i + 1
+        return 0
 
+<<<<<<< HEAD
     def __str__(self):
         nl = "\n\t"
         return f"Ledger {id(self)} User list: {self.user_list.keys()}\n\t{nl.join([str(t) for t in self.transactions])}"
+=======
+    def toString(self):
+        return f"\nLedger {id(self)}\n User list: {self.user_list.keys()}\n Transactions: {[t.toString() for t in self.transactions]}"
+>>>>>>> 79a1f310df3b139b3fba34fc25b66316e57943e3
