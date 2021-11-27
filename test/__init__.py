@@ -15,8 +15,12 @@ from .transaction import TestTransaction
 from .transaction import TestMultiThreadTransaction
 from .util import TestUtil
 from .transaction import TestDelegate
+<<<<<<< HEAD
 from .transaction import TestMerge
 from .transaction import TestMerge2
+=======
+from .network import TestNetwork
+>>>>>>> 007b254e1aff119c27d9de3098a239fb9753a8aa
 
 
 def run_all_tests():

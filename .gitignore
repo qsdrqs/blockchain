@@ -8,3 +8,4 @@ custom.vim
 CS_SESSION
 .tasks
 .vimspector.json
+.vscode/
