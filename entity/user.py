@@ -101,15 +101,15 @@ class User:
         num_delegate = int(math.ceil(len(result) * percentage / 100))
         self.delegate_history.append((time.time(), result[:num_delegate]))
         return result[:num_delegate]
-    
-    def sign_delegate(self):   
+
+    def sign_delegate(self):
         if self.id in self.delegate_history[-1][1]:
             for ledger in self.ledgers:
                 for transaction in ledger.transactions:
                     if transaction.is_pending:
                         transaction.delegate_verify(encrypt.sign_message(
                             self.private_key, transaction.hash))
-    
+
     def check_delegate_signature(self, ledger):
         return True
 
@@ -156,7 +156,8 @@ class User:
                 valid_len_in += 1
             else:
                 break
-        valid_hash_in = in_ledger.transactions[valid_len_in - 1].hash.hexdigest()
+        valid_hash_in = in_ledger.transactions[valid_len_in -
+                                               1].hash.hexdigest()
 
         valid_len_present = 0
         for transaction in self.ledgers[0].transactions:
@@ -164,7 +165,7 @@ class User:
                 valid_len_present += 1
             else:
                 break
-        
+
         if valid_len_in < valid_len_present:
             # New ledger has shorter singed chain
             return
@@ -177,7 +178,7 @@ class User:
             elif ledger.transactions[valid_len_in - 1].hash.hexdigest() != valid_hash_in:
                 # Existing ledger is not on the same chain as the common chain
                 self.ledgers.remove(ledger)
-        
+
         saved_ledgers = []
         for index in range(valid_len_in, len(in_ledger.transactions)):
             for ledger in self.ledgers:
@@ -186,14 +187,17 @@ class User:
                 elif ledger.transactions[index].hash.hexdigest() != in_ledger.transactions[index].hash.hexdigest():
                     saved_ledgers.append(ledger)
                     self.ledgers.remove(ledger)
+                else:
+                    ledger.transactions[index].delegates_sign.update(
+                        in_ledger.transactions[index].delegates_sign)
+                    in_ledger.transactions[index].delegates_sign.update(
+                        ledger.transactions[index].delegates_sign)
         if len(self.ledgers) == 0:
             self.ledgers.append(in_ledger.deepcopy())
         self.ledgers += saved_ledgers
         for ledger in self.ledgers:
-            ledger.transactions[:valid_len_in] = [a.deepcopy() for a in in_ledger.transactions[:valid_len_in]]
-
-
-
+            ledger.transactions[:valid_len_in] = [
+                a.deepcopy() for a in in_ledger.transactions[:valid_len_in]]
 
     def receive_ledger(self, ledger):
         '''
