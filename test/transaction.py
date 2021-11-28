@@ -516,3 +516,64 @@ class TestMultiThreadTransaction(unittest.TestCase):
                         == len(self.user_list[1].ledgers)
                         == len(self.user_list[2].ledgers)
                         == 1)
+
+
+class TestSameLedger(unittest.TestCase):
+    def setUp(self):
+        # init users
+        num_user = 3
+        self.users = []
+        for i in range(1, num_user + 1):
+            self.users.append(User(i, [], 1000))
+
+        # init ledger
+        self.ledger = Ledger(
+            [user.generate_digest() for user in self.users], [])
+    
+    def test_1(self):
+        ledger_1 = self.ledger.deepcopy()
+        # sender_id, receiver_id, amount, ledger=None, timestamp=None, hash=None, signature=None, is_pending = True
+        tA = Transaction(1, 2, 30, ledger_1)
+        tA.signature = 0
+        ledger_1.append(tA)
+        tB = Transaction(1, 2, 40, ledger_1)
+        tB.signature = 0
+        ledger_1.append(tB)
+        tC = Transaction(1, 2, 50, ledger_1)
+        tC.signature = 0
+        ledger_1.append(tC)
+        tD = Transaction(1, 2, 60, ledger_1)
+        tD.signature = 0
+        ledger_1.append(tD)
+        ledger_1.transactions[0].is_pending = False
+        ledger_1.transactions[1].is_pending = False
+        self.users[0].ledgers.append(ledger_1.deepcopy())
+
+
+        ledger_2 = self.ledger.deepcopy()
+        tA = Transaction(1, 2, 30, ledger_2)
+        tA.signature = 0
+        ledger_2.append(tA)
+        tB = Transaction(1, 2, 40, ledger_2)
+        tB.signature = 0
+        ledger_2.append(tB)
+        tC = Transaction(1, 2, 50, ledger_2)
+        tC.signature = 0
+        ledger_2.append(tC)
+        tD = Transaction(1, 2, 60, ledger_2)
+        tD.signature = 0
+        ledger_2.append(tD)
+        ledger_2.transactions[0].is_pending = False
+        ledger_2.transactions[1].is_pending = False
+        self.users[1].ledgers.append(ledger_2.deepcopy())
+
+        print("\n")
+        print("Local ledger: \n" + str(self.users[0].ledgers[0]))
+        ledger_1.transactions[2].is_pending = False
+        print("In ledger: \n" + str(ledger_1))
+        self.users[0].handle_new_ledger(ledger_1)
+
+        print("Local ledger: \n" + str(self.users[0].ledgers[0]))
+
+
+    

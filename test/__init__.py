@@ -17,6 +17,8 @@ from .util import TestUtil
 from .transaction import TestDelegate
 from .transaction import TestMergeSign
 from .transaction import TestMerge2
+# from .transaction import TestMerge
+from .transaction import TestSameLedger
 from .network import TestNetwork
 
 

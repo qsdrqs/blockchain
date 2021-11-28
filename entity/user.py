@@ -310,3 +310,35 @@ class User:
 
     def get_ledgers_str(self):
         return "\n".join(str(l) for l in self.ledgers)
+
+    def check_ledger_same(self,ledger_in):
+        def check_two_ledger(ledger_my, ledger_in):
+            if(len(ledger_my.transactions)!=len(ledger_in.transactions)):
+                return False
+            if(len(ledger_in.transactions) == 0):
+                #should warn others this is bad node
+                print(self.id + ' is currently under attack')
+                return True
+
+            if ledger_my.transactions[-1].hash.hexdigest() != ledger_in.transactions[-1].hash.hexdigest():
+                return False
+
+            # check sign
+            checked_length_my = ledger_my.delegates_sign_len()
+            checked_length_in = ledger_in.delegates_sign_len()
+            if(checked_length_in != checked_length_my):
+                return False
+            for i in range(checked_length_in,len(ledger_my.transactions)):
+                if ledger_my.transactions[i].delegates_sign.keys() != ledger_in.transactions[i].delegates_sign.keys():
+                    return False
+            return True
+        
+        for ledger in self.ledgers:
+            if check_two_ledger(ledger, ledger_in):
+                return True
+                
+        return False
+            
+
+
+        
