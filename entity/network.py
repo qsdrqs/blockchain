@@ -234,17 +234,17 @@ class Network:
         walk_max_num = 15
 
         def single_walk(walk_id):
-            initial_pos = self.pos[walk_id]
+            final_pos = self.pos[walk_id]
             for i in range(randrange(walk_min_num, walk_max_num)):
                 direction = randrange(0, 4)
                 if(direction == 0):
-                    final_pos = [initial_pos[0], initial_pos[1]-1]
+                    final_pos = [final_pos[0], final_pos[1]-1]
                 elif(direction == 1):
-                    final_pos = [initial_pos[0]+1, initial_pos[1]]
+                    final_pos = [final_pos[0]+1, final_pos[1]]
                 elif(direction == 2):
-                    final_pos = [initial_pos[0], initial_pos[1]+1]
-                elif(direction == 3):
-                    final_pos = [initial_pos[0]+1, initial_pos[1]]
+                    final_pos = [final_pos[0], final_pos[1]+1]
+                else:
+                    final_pos = [final_pos[0]+1, final_pos[1]]
             return final_pos
 
         def is_user_connected(walk_id, walk_pos):
@@ -276,7 +276,7 @@ class Network:
             j = 0
             while j != i:
                 if id_array[i] == id_array[j]:
-                    id_array = randrange(0, self.user_count)
+                    id_array[i] = randrange(0, self.user_count)
                 else:
                     j = j+1
         for i in id_array.keys():
@@ -292,4 +292,3 @@ class Network:
                                 final_pos[1]] = self.users[walk_id]
             self.network_matrix[initial_pos[0], initial_pos[1]] = None
             self.pos[walk_id] = final_pos
-
