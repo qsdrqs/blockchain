@@ -144,5 +144,6 @@ class Ledger():
             return i + 1
         return 0
 
-    def toString(self):
-        return f"\nLedger {id(self)}\n User list: {self.user_list.keys()}\n Transactions: {[t.toString() for t in self.transactions]}"
+    def __str__(self):
+        nl = "\n\t"
+        return f"Ledger {id(self)} User list: {self.user_list.keys()}\n\t{nl.join([str(t) for t in self.transactions])}"
