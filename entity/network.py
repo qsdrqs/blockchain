@@ -16,8 +16,10 @@ import numpy.random as npr
 from random import randrange
 import queue
 import numpy.matlib as matlib
+import requests
 from util.multithreading import ThreadPool
-from config import Config
+from config import Config, SimulationConfig
+from router import connect, spread_ledger
 
 
 class Network:
@@ -47,10 +49,10 @@ class Network:
         # Initialize the thread pool.
         self.thread_pool = ThreadPool(users)
 
-        # TODO: randomly set users in the network.
-
         # build the connect matrix.
         self.refresh_network()
+        while not self.is_connected_graph():
+            self.refresh_network()
 
     def refresh_network(self):
         '''
@@ -80,7 +82,7 @@ class Network:
         # self.network_matrix[1,2] = self.users[1]
         # Initialize the connect matrix.
         self.connect_matrix = matlib.zeros(
-            (self.user_count, self.user_count), dtype=bool)
+            (self.user_count + 1, self.user_count + 1), dtype=bool)
         for user1 in self.users.keys():
             for user2 in self.users.keys():
                 if user1 != user2:
@@ -94,10 +96,6 @@ class Network:
                         self.connect_matrix[user1, user2] = True
                         self.connect_matrix[user2, user1] = True
 
-        # pass  # TODO
-        while not self.is_connected_graph():
-            self.refresh_network()
-
     def is_connected_graph(self):
         '''
         Check if the network is connected.
@@ -110,7 +108,7 @@ class Network:
         q = queue.Queue()
         q.put(list(self.users.keys())[0])
         user_checked[0] = True
-        count = 1
+        count = 0
         while not q.empty():
             current_id = q.get()
             connected_user = self.get_connected_users(current_id)
@@ -126,7 +124,6 @@ class Network:
         '''
         Get the connected users of specified user.
         '''
-        # TODO: To be implemented. Currently, return all other users.
         connected_users_id_list = []
         for my_user_id in self.users.keys():
             if(self.connect_matrix[user_id, my_user_id]):
@@ -138,7 +135,6 @@ class Network:
         '''
         Check if two users are connected.
         '''
-        # TODO: To be implemented. Currently, return True.
         return self.connect_matrix[sender.id, receiver.id]
 
     def _get_user_by_id(self, user_id):
@@ -157,15 +153,20 @@ class Network:
         sender = self._get_user_by_id(sender_id)
         receiver = self._get_user_by_id(receiver_id)
         if sender is None or receiver is None:
-            raise Exception(
-                "Failed to send ledger from {} to user {}".format(sender_id, receiver_id))
+            print("Failed to send ledger from {} to user {}".format(
+                sender_id, receiver_id))
 
         # check if the sender and receiver are connected.
-        if not self.is_connected(sender.id, receiver.id):
-            raise Exception(
-                "Failed to send ledger from {} to user {}".format(sender_id, receiver_id))
+        if not self.is_connected(sender, receiver):
+            print("Failed to send ledger from {} to user {}".format(
+                sender_id, receiver_id))
 
-        return self.thread_pool.run_task_async(receiver_id, "receive_ledger", ledger, is_write=True)
+        # handle the visual mode
+        if SimulationConfig.visual_mode:
+            requests.get(SimulationConfig.server_url+'/spread_ledger',
+                         params={'src': sender_id, 'dest': receiver_id})
+        # return self.thread_pool.run_task_async(receiver_id, "receive_ledger", ledger, self, is_write=True)
+        return receiver.receive_ledger(ledger, self)
 
     def random_walk(self):
 

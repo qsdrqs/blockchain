@@ -118,11 +118,12 @@ export default {
       })
 
       // set the delegates
-      this.socket_io.on('update_delegates', (user_id) => {
-          cy.$('.highlighted').removeClass('highlighted')
-          for (let i = 0; i < data.length; i++) {
-            cy.$('#' + user_id[i]).addClass('highlighted')
-          }
+      this.socket_io.on('update_delegate', (data) => {
+        if (data.is_delegate == 'True') {
+          cy.$('#' + data.user_id).addClass('highlighted')
+        } else {
+          cy.$('#' + data.user_id).removeClass('highlighted')
+        }
       })
     }
   }

@@ -13,7 +13,7 @@ This file the web router file that control the whole network
 from flask import Flask, request
 from flask_socketio import SocketIO, emit, join_room
 from flask_cors import CORS
-from entity import *
+from config import *
 
 app = Flask(__name__)
 allow_origins = [
@@ -21,7 +21,6 @@ allow_origins = [
 socketio = SocketIO(app, cors_allowed_origins=allow_origins)
 CORS(app, origins=allow_origins)
 
-network_entity = Network()
 connect_magic_number = 64  # can be everything
 
 
@@ -32,6 +31,7 @@ def connect():
     '''
     print("Connected")
     join_room(connect_magic_number)
+    from simulation import network_entity
     update_topo(network_entity)
 
 
@@ -55,18 +55,20 @@ def update_topo(network):
     emit("update_topo", coordinates, namespace='/ws', to=connect_magic_number)
 
 
-def update_delegates(delegates_id_list):
+def update_delegate(delegate_id, is_delegate):
     '''
     Update the delegates of the network
     '''
-    emit("update_delegates", {"delegates_id_list": delegates_id_list},
-         namespace='/ws', to=connect_magic_number)
+    with app.app_context():
+        emit("update_delegate", {"user_id": delegate_id, "is_delegate": is_delegate},
+             namespace='/ws', to=connect_magic_number)
 
 
 def spread_ledger(src, dest):
     '''
     Spread the ledger to the destination user
     '''
+    print("Spread ledger from {} to {}".format(src, dest))
     emit("spread_ledger", {"src": src, "dest": dest},
          namespace='/ws', to=connect_magic_number)
 
@@ -76,5 +78,28 @@ def get_user_list():
     '''
     Get all user list in the network
     '''
+    from simulation import network_entity
     users = network_entity.users
     return list(users.keys()).__str__()
+
+
+@app.route('/spread_ledger')
+def spread_ledger_route():
+    '''
+    Spread the ledger to the destination user
+    '''
+    src = request.args.get('src')
+    dest = request.args.get('dest')
+    spread_ledger(src, dest)
+    return "OK"
+
+
+@app.route('/update_delegate')
+def update_delegate_route():
+    '''
+    Update the delegates of the network
+    '''
+    delegate_id = request.args.get('delegate_id')
+    is_delegate = request.args.get('is_delegate')
+    update_delegate(delegate_id, is_delegate)
+    return "OK"

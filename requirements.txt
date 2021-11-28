@@ -7,3 +7,4 @@ pycodestyle==2.8.0
 pycryptodome==3.11.0
 simple-websocket==0.4.0
 toml==0.10.2
+requests==2.26.0

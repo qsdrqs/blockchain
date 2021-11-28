@@ -11,6 +11,7 @@ This file the main file of the project.
 
 '''
 from test import *
+import simulation
 
 if __name__ == '__main__':
     # run_all_tests()
@@ -21,4 +22,5 @@ if __name__ == '__main__':
     # run_specific_test_class(TestDelegate)
     # run_specific_test_method(TestDelegate, 'test_delegate_history')
     # run_specific_test_method(TestMerge, 'test_2')
-    run_specific_test_method(TestSameLedger, 'test_1')
+    # run_specific_test_method(TestSameLedger, 'test_1')
+    simulation.run()

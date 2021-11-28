@@ -11,6 +11,7 @@ This file define the user in the blockchain.
 
 '''
 
+import requests
 from util import encrypt
 from .ledger import Ledger
 from .ledger import UserDigest
@@ -18,7 +19,8 @@ from .transaction import Transaction
 from entity import ledger
 import math
 import time
-from config import SimulationConfig
+from config import Config, SimulationConfig
+from router import update_delegate
 
 
 class User:
@@ -68,7 +70,10 @@ class User:
         for i in range(len(ledger.transactions)):
             # verify the hash value
             transaction = ledger.transactions[i]
-            last_transaction = ledger.transactions[i]
+            if i == 0:
+                last_transaction = None
+            else:
+                last_transaction = ledger.transactions[i - 1]
             if transaction.calculate_hash(last_transaction).hexdigest() != transaction.hash.hexdigest():
                 return False
 
@@ -93,7 +98,7 @@ class User:
 
         return True
 
-    def choose_delegate(self):
+    def choose_delegate(self, network=None):
         scores = {}
         for uid in self.ledgers[0].user_list.keys():
             scores[uid] = self.ledgers[0].calculate_weight(uid)
@@ -111,8 +116,13 @@ class User:
         # judge that the user is delegate or not
         if self.id in delegate_group:
             self.is_delegate = True
+            if SimulationConfig.visual_mode:
+                requests.get(SimulationConfig.server_url+"/update_delegate", params={
+                             "delegate_id": self.id, "is_delegate": self.is_delegate})
         else:
             self.is_delegate = False
+            if SimulationConfig.visual_mode:
+                update_delegate(self.id, self.is_delegate)
 
         return delegate_group
 
@@ -137,8 +147,7 @@ class User:
                     args a and b are bytes
                     '''
                     return int.from_bytes(a, byteorder='big') > int.from_bytes(b, byteorder='big')
-                int.from_bytes(
-                    ledger.transaction[-1].hash.hexdigest().encode(), "big")
+
                 if final_ledger is None or a_larger_than_b(
                         ledger.transaction[-1].hash.hexdigest().encode(), final_ledger.transaction[-1].hash.hexdigest().encode()):
                     final_ledger = ledger
@@ -266,29 +275,34 @@ class User:
             ledger.transactions[:valid_len_in] = [
                 a.deepcopy() for a in in_ledger.transactions[:valid_len_in]]
 
-    def receive_ledger(self, ledger):
+    def receive_ledger(self, ledger, network=None):
         '''
         Receive the ledger from other users.
         Return True if the ledger is valid and added to the user.
         Return False if the ledger is invalid.
         '''
+        # judge whether the user already have a same one
+        if self.check_ledger_same(ledger):
+            return
+
         if self.verify_ledger(ledger):
-            # judge whether the user already have a same one
-            # 1. the same chain
-            # 2. the same sign of delegates
-            hash = ledger.transactions[-1].hash.hexdigest()
-            for my_ledger in self.ledgers:
-                my_hash = my_ledger.transactions[-1].hash.hexdigest()
-                if hash == my_hash:
-                    print(str(self.id) + "has drop the ledger!")
-                    return
 
             self._append_or_update(ledger)
+            # TODO: should be inserted into handle_new_ledger function
+            if network is not None:
+                self.spread_ledger(ledger, network)
             # update the balance
             self.update_balance(ledger)
         else:
-            raise Exception(
-                "Failed to send ledger from others to user {}".format(self.id))
+            print("Failed to send ledger from others to user {}".format(self.id))
+
+    def spread_ledger(self, ledger, network):
+        '''
+        Spread a specific ledger to other users.
+        '''
+        user_id_list = network.get_connected_users(self.id)
+        for receiver_id in user_id_list:
+            network.send_ledger(self.id, receiver_id, ledger)
 
     def spread_ledgers(self, network):
         '''
@@ -302,9 +316,8 @@ class User:
         Send the ledger to specific receivers.
         '''
         for receiver_id in receiver_list:
-            # we only need to calculate one ledger because
-            # the verified transactions by delegates should be the same
-            network.send_ledger(self.id, receiver_id, self.ledgers[0])
+            for ledger in self.ledgers:
+                network.send_ledger(self.id, receiver_id, ledger)
 
     def drop_ledger(self, ledger):
         '''

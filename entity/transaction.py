@@ -52,8 +52,8 @@ class Transaction:
         self.signature = signature
 
     def calculate_hash(self, last_transaction):
-        self_message = str(
-            self.sender_id + self.receiver_id + self.timestamp + self.amount).encode()
+        self_message = str(self.sender_id + self.receiver_id +
+                           self.timestamp + self.amount).encode()
         if last_transaction is None:
             last_message = b''
         else:
