@@ -21,8 +21,7 @@ allow_origins = [
 socketio = SocketIO(app, cors_allowed_origins=allow_origins)
 CORS(app, origins=allow_origins)
 
-network_entity = Network(
-    4, 4, [User(1, [], 1), User(2, [], 1), User(3, [], 1)])
+network_entity = Network()
 connect_magic_number = 64  # can be everything
 
 
@@ -54,6 +53,14 @@ def update_topo(network):
 
     print(coordinates)
     emit("update_topo", coordinates, namespace='/ws', to=connect_magic_number)
+
+
+def update_delegates(delegates_id_list):
+    '''
+    Update the delegates of the network
+    '''
+    emit("update_delegates", {"delegates_id_list": delegates_id_list},
+         namespace='/ws', to=connect_magic_number)
 
 
 def spread_ledger(src, dest):
