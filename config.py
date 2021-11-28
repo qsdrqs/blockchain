@@ -26,4 +26,4 @@ class TimeConfig(Config):
 
 class SimulationConfig(Config):
     # Simulation config
-    pass
+    delegate_percentage = 20
