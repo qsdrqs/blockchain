@@ -88,23 +88,8 @@ class User:
                 return False
 
         # verify the pending status
-        # TODO: To be tested
-        def verify_delegates_sign(transaction):
-            '''
-            Verify if signature is fully signed.
-            '''
-            for i in range(len(self.delegate_history)):
-                if self.delegate_history[-i - 1][1] == transaction.delegates_sign.keys():
-                    for id_sign in transaction.delegates_sign.items():
-                        if not encrypt.verify_signature(self.ledgers[0].get_user_public_key(
-                                id_sign[0]), id_sign[1], transaction.hash):
-                            return False
-                    return True
+        if not self.check_delegate_signature(ledger):
             return False
-
-        for i in range(len(ledger.transactions)):
-            if not ledger.transactions[-i - 1].is_pending:
-                return verify_delegates_sign(ledger.transactions[-i - 1])
 
         return True
 
@@ -132,14 +117,60 @@ class User:
         return delegate_group
 
     def sign_delegate(self):
-        if self.id in self.delegate_history[-1][1]:
-            for ledger in self.ledgers:
-                for transaction in ledger.transactions:
-                    if transaction.is_pending:
-                        transaction.delegate_verify(encrypt.sign_message(
-                            self.private_key, transaction.hash))
+        '''
+        delegate sign the ledger
+        '''
+        if self.is_delegate:
+            # Sign the longest and the largest ledger
+            longest_length = max(
+                [len(ledger.transactions) for ledger in self.ledgers])
+            longest_ledgers = [
+                ledger for ledger in self.ledgers if len(ledger.transactions) == longest_length]
+            final_ledger = None
+            for ledger in longest_ledgers:
+                if len(ledger.transactions) == 0:
+                    return
+
+                def a_larger_than_b(a, b):
+                    '''
+                    Return True if a is larger than b.
+                    args a and b are bytes
+                    '''
+                    return int.from_bytes(a, byteorder='big') > int.from_bytes(b, byteorder='big')
+                int.from_bytes(
+                    ledger.transaction[-1].hash.hexdigest().encode(), "big")
+                if final_ledger is None or a_larger_than_b(
+                        ledger.transaction[-1].hash.hexdigest().encode(), final_ledger.transaction[-1].hash.hexdigest().encode()):
+                    final_ledger = ledger
+
+            if final_ledger is None:
+                raise Exception("No ledger to sign!")
+
+            final_ledger.transactions[-1].delegates_verify(
+                self.id, encrypt.sign_message(self.private_key, final_ledger.transactions[-1].hash))
 
     def check_delegate_signature(self, ledger):
+        '''
+        Check the delegates signature of the ledger.
+        '''
+        # TODO: To be tested
+        def verify_delegates_sign(transaction):
+            '''
+            Verify if signature is fully signed.
+            '''
+            for i in range(len(self.delegate_history)):
+                if self.delegate_history[-i - 1][1] == transaction.delegates_sign.keys():
+                    for id_sign in transaction.delegates_sign.items():
+                        if not encrypt.verify_signature(self.ledgers[0].get_user_public_key(
+                                id_sign[0]), id_sign[1], transaction.hash):
+                            return False
+                    return True
+            return False
+
+        for i in range(len(ledger.transactions)):
+            if not ledger.transactions[-i - 1].is_pending:
+                return verify_delegates_sign(ledger.transactions[-i - 1])
+
         return True
 
     def generate_digest(self):
