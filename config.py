@@ -16,16 +16,19 @@ from random import randint
 
 class Config:
     # Public config
-    network_row = 30
-    network_col = 30
-    users = 100
+    network_row = 5
+    network_col = 5
+    users = 10
 
 
 class TimeConfig(Config):
     # Time config
+    walk_time = 10
+    delegate_time = 10
+
     @staticmethod
     def transaction_time():
-        return randint(1, 2)
+        return randint(1, 3)
 
 
 class SimulationConfig(Config):
@@ -34,5 +37,5 @@ class SimulationConfig(Config):
     visual_mode = True
     server_port = 5000
     server_url = 'http://localhost:' + str(server_port)
-    radius_max = 5
-    radius_min = 5
+    radius_max = 2
+    radius_min = 2

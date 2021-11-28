@@ -103,3 +103,13 @@ def update_delegate_route():
     is_delegate = request.args.get('is_delegate')
     update_delegate(delegate_id, is_delegate)
     return "OK"
+
+
+@app.route('/update_topo')
+def update_topo_call():
+    '''
+    Update the topology of the network
+    '''
+    from simulation import network_entity
+    update_topo(network_entity)
+    return "OK"

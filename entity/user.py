@@ -98,13 +98,14 @@ class User:
 
         return True
 
-    def choose_delegate(self, network=None):
+    def choose_delegate(self):
         scores = {}
         for uid in self.ledgers[0].user_list.keys():
             scores[uid] = self.ledgers[0].calculate_weight(uid)
             for i in range(1, 4):
                 if len(self.delegate_history) >= i and (uid in self.delegate_history[-i][1]):
                     scores[uid] = scores[uid] * 0.8
+        print(scores)
         result = list(dict(
             sorted(scores.items(), key=lambda item: item[1])).keys())
         result.reverse()
@@ -122,7 +123,8 @@ class User:
         else:
             self.is_delegate = False
             if SimulationConfig.visual_mode:
-                update_delegate(self.id, self.is_delegate)
+                requests.get(SimulationConfig.server_url+"/update_delegate", params={
+                             "delegate_id": self.id, "is_delegate": self.is_delegate})
 
         return delegate_group
 

@@ -232,3 +232,6 @@ class Network:
                                 final_pos[1]] = self.users[walk_id]
             self.network_matrix[initial_pos[0], initial_pos[1]] = None
             self.pos[walk_id] = final_pos
+
+        if SimulationConfig.visual_mode:
+            requests.get(SimulationConfig.server_url+'/update_topo')
