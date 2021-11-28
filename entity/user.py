@@ -213,10 +213,10 @@ class User:
             if same_ledger(my_ledger, ledger):
                 # update the ledger
                 self.ledgers.remove(my_ledger)
-                self.ledgers.append(ledger)
+                self.ledgers.append(ledger.deepcopy())
             else:
                 # append the ledgerdebugOptions
-                self.ledgers.append(ledger)
+                self.ledgers.append(ledger.deepcopy())
 
     def handle_new_ledger(self, in_ledger):
         valid_len_in = 0
@@ -287,10 +287,12 @@ class User:
 
         if self.verify_ledger(ledger):
 
-            self._append_or_update(ledger)
+            self.handle_new_ledger(ledger)
             # TODO: should be inserted into handle_new_ledger function
             if network is not None:
                 self.spread_ledger(ledger, network)
+            else:
+                print("No network to spread ledger!")
             # update the balance
             self.update_balance(ledger)
         else:

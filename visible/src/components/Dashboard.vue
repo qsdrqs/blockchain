@@ -38,7 +38,7 @@ export default {
               'line-color': '#61bffc',
               'target-arrow-color': '#61bffc',
               'transition-property': 'background-color, line-color, target-arrow-color',
-              'transition-duration': '0.5s',
+              'transition-duration': '0.3s',
               'z-index': 1000
             }
           }
@@ -66,7 +66,7 @@ export default {
       cy.$('#' + element.data.id).toggleClass('highlighted')
       setTimeout(() => {
         cy.$('#' + element.data.id).toggleClass('highlighted')
-      }, 800)
+      }, 400)
     },
     add_highlight (cy, element) {
       /*
