@@ -44,43 +44,7 @@ class Network:
             self.users[user.id] = user
             self.user_count = self.user_count+1
 
-        # Initialize the network.
-        self.network_matrix = matlib.empty((rows, cols), dtype=User)
-        self.pos = {}
-        pos_count = 0
-        for user in self.users.values():
-            pos_temp = [randrange(rows), randrange(cols)]
-            if(pos_count == 0):
-                self.pos[pos_count] = pos_temp
-                pos_count += 1
-            j = 0
-            while j != len(self.pos):
-                if(pos_temp == self.pos[j]):
-                    pos_temp = [randrange(rows), randrange(cols)]
-                else:
-                    j = j+1
-            self.pos[user.id] = pos_temp
-            self.network_matrix[pos_temp[0], pos_temp[1]] = user
-
-        # self.network_matrix[1,2] = self.users[1]
-        # Initialize the connect matrix.
-        # TODO: initalized as all True for testing. Should be all False.
-        self.connect_matrix = matlib.ones(
-            (len(users), len(users)), dtype=bool)
-        for user1 in self.users.keys():
-            for user2 in self.users.keys():
-                if user1 != user2:
-                    com_radius = min(
-                        self.users[user1].radius, self.users[user2].radius)
-                    vec1 = np.array(self.pos[user1])
-                    vec2 = np.array(self.pos[user2])
-                    distance = np.sqrt(
-                        (vec1[0]-vec2[0])*(vec1[0]-vec2[0]) + (vec1[1]-vec2[1])*(vec1[1]-vec2[1]))
-                    if(distance <= com_radius):
-                        self.connect_matrix[user1, user2] = True
-                        self.connect_matrix[user2, user1] = True
-
-            # Initialize the thread pool.
+        # Initialize the thread pool.
         self.thread_pool = ThreadPool(users)
 
         # TODO: randomly set users in the network.
@@ -115,7 +79,6 @@ class Network:
 
         # self.network_matrix[1,2] = self.users[1]
         # Initialize the connect matrix.
-        # TODO: initalized as all True for testing. Should be all False.
         self.connect_matrix = matlib.zeros(
             (self.user_count, self.user_count), dtype=bool)
         for user1 in self.users.keys():
@@ -130,30 +93,6 @@ class Network:
                     if(distance <= com_radius):
                         self.connect_matrix[user1, user2] = True
                         self.connect_matrix[user2, user1] = True
-
-        def is_connected_graph(self):
-            '''
-            Check if the network is connected.
-            '''
-            # initialize checked user dict
-            user_checked = {}
-            for user_id in self.users:
-                user_checked[user_id] = False
-            # bfs determine graph is connect or not
-            q = queue.Queue()
-            q.put(list(self.users.keys())[0])
-            user_checked[0] = True
-            count = 1
-            while not q.empty():
-                print('dxx')
-                current_id = q.get()
-                connected_user = self.get_connected_users(current_id)
-                for i in range(len(connected_user)):
-                    if user_checked[connected_user[i]] == False:
-                        q.put(connected_user[i])
-                        user_checked[connected_user[i]] = True
-                        count = count + 1
-            return count == self.user_count
 
         # pass  # TODO
         while not self.is_connected_graph():
