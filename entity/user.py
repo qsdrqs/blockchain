@@ -36,6 +36,10 @@ class User:
         self.radius = radius
         self.delegate_history = []
         self.delegate_percentage = SimulationConfig.delegate_percentage
+        self.is_delegate = False
+
+        # We need to choose delegates when the user has set up
+        self.choose_delegate()
 
     def add_transaction(self, receiver_id, amount):
         '''
@@ -87,6 +91,7 @@ class User:
                 return False
 
         # verify the pending status
+        # TODO: To be tested
         def verify_delegates_sign(transaction):
             '''
             Verify if signature is fully signed.
@@ -120,6 +125,13 @@ class User:
             math.ceil(len(result) * self.delegate_percentage / 100))
         delegate_group = set(result[:num_delegate])
         self.delegate_history.append((time.time(), delegate_group))
+
+        # judge that the user is delegate or not
+        if self.id in delegate_group:
+            self.is_delegate = True
+        else:
+            self.is_delegate = False
+
         return delegate_group
 
     def sign_delegate(self):
@@ -291,6 +303,6 @@ class User:
         self.ledgers = user.ledgers
         self.balance = user.balance
         self.radius = user.radius
-    
+
     def get_ledgers_str(self):
         return "\n".join(str(l) for l in self.ledgers)
