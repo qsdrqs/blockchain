@@ -20,14 +20,17 @@ class Transaction:
     Transaction class
     '''
 
-    def __init__(self, sender_id, receiver_id, amount, ledger=None, timestamp=None, hash=None, signature=None, is_pending=True):
+    def __init__(self, sender_id, receiver_id, amount, ledger=None, timestamp=None, hash=None, signature=None, is_pending=True, delegates_sign=None):
         # Manually implement overload...
         # Rubbish Python...
         self.sender_id = sender_id
         self.receiver_id = receiver_id
         self.amount = amount
         self.is_pending = is_pending
-        self.delegates_sign = {}
+        if delegates_sign is None:
+            self.delegates_sign = {}
+        else:
+            self.delegates_sign = delegates_sign
         if timestamp is None and hash is None and signature is None and ledger is not None:
             self.signature = None
             self.timestamp = time.time()
@@ -59,8 +62,11 @@ class Transaction:
         return util.hash_message(last_message+self_message)
 
     def deepcopy(self):
+        sign = {}
+        for key in self.delegates_sign:
+            sign[key] = self.delegates_sign[key]
         return Transaction(self.sender_id, self.receiver_id,
-                           self.amount, timestamp=self.timestamp, hash=self.hash, signature=self.signature, is_pending=self.is_pending)
+                           self.amount, timestamp=self.timestamp, hash=self.hash, signature=self.signature, is_pending=self.is_pending, delegates_sign=sign)
 
     def delegates_verify(self, did, signature):
         self.delegates_sign[did] = signature
@@ -68,4 +74,4 @@ class Transaction:
 
     def __str__(self):
         pend_status = "PEND" if self.is_pending else "DONE"
-        return f"Time {self.timestamp}, {self.sender_id} to {self.receiver_id}, ${self.amount}, {pend_status}"
+        return f"Time {self.timestamp}: {self.sender_id} to {self.receiver_id} - ${self.amount} - {pend_status} - {self.delegates_sign}"
