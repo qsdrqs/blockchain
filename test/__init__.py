@@ -15,7 +15,7 @@ from .transaction import TestTransaction
 from .transaction import TestMultiThreadTransaction
 from .util import TestUtil
 from .transaction import TestDelegate
-from .transaction import TestMerge
+from .transaction import TestMergeSign
 from .transaction import TestMerge2
 from .network import TestNetwork
 

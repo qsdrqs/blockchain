@@ -95,6 +95,55 @@ class TestTransaction(unittest.TestCase):
         self.assertTrue(len(self.user1.ledgers) ==
                         len(self.user2.ledgers) == 2)
 
+class TestMergeSign(unittest.TestCase):
+    def setUp(self):
+        # init users
+        num_user = 3
+        self.users = []
+        for i in range(1, num_user + 1):
+            self.users.append(User(i, [], 1000))
+
+        # init ledger
+        self.ledger = Ledger(
+            [user.generate_digest() for user in self.users], [])
+    
+    def test_merge_sign_pend_only(self):
+        ledger_1 = self.ledger.deepcopy()
+        tA = Transaction(1, 2, 30, ledger_1)
+        tA.signature = 0
+        tA.delegates_sign[1] = True
+        tA.delegates_sign[2] = True
+        tA.delegates_sign[3] = True
+        ledger_1.append(tA)
+        tB = Transaction(1, 2, 40, ledger_1)
+        tB.signature = 0
+        tB.delegates_sign[1] = True
+        tB.delegates_sign[2] = True
+        tB.delegates_sign[3] = True
+        ledger_1.append(tB)
+        tC = Transaction(1, 2, 50, ledger_1)
+        tC.signature = 0
+        tC.delegates_sign[1] = True
+        ledger_1.append(tC)
+        tD = Transaction(1, 2, 60, ledger_1)
+        tD.signature = 0
+        ledger_1.append(tD)
+        ledger_1.transactions[0].is_pending = False
+        ledger_1.transactions[1].is_pending = False
+        self.users[0].ledgers.append(ledger_1.deepcopy())
+        print("\n")
+        print("Local ledger: \n" + self.users[0].get_ledgers_str())
+        ledger_1.transactions.remove(ledger_1.transactions[-1])
+        tE = Transaction(1, 2, 70, ledger_1)
+        tE.signature = 0
+        del ledger_1.transactions[2].delegates_sign[1]
+        ledger_1.transactions[2].delegates_sign[2] = True
+        ledger_1.append(tE)
+        print("In ledger: \n" + str(ledger_1))
+        self.users[0].handle_new_ledger(ledger_1)
+        print("----- Merging Ledger -----")
+        print("Local ledger: \n" + self.users[0].get_ledgers_str())
+
 
 
 class TestMerge2(unittest.TestCase):
@@ -108,7 +157,7 @@ class TestMerge2(unittest.TestCase):
         # init ledger
         self.ledger = Ledger(
             [user.generate_digest() for user in self.users], [])
-    
+
     def test_1(self):
         ledger_1 = self.ledger.deepcopy()
         tA = Transaction(1, 2, 30, ledger_1)
@@ -133,7 +182,7 @@ class TestMerge2(unittest.TestCase):
         self.users[0].handle_new_ledger(ledger_1)
         print("----- Merging Ledger -----")
         print("Local ledger: \n" + self.users[0].get_ledgers_str())
-    
+
     def test_2(self):
         ledger_1 = self.ledger.deepcopy()
         tA = Transaction(1, 2, 30, ledger_1)
@@ -193,7 +242,6 @@ class TestMerge2(unittest.TestCase):
         self.users[0].handle_new_ledger(ledger_1)
         print("----- Merging Ledger -----")
         print("Local ledger: \n" + self.users[0].get_ledgers_str())
-
 
     def test_4(self):
         ledger_1 = self.ledger.deepcopy()
@@ -307,6 +355,7 @@ class TestMerge2(unittest.TestCase):
         print("----- Merging Ledger -----")
         print("Local ledger: \n" + self.users[0].get_ledgers_str())
 
+
 class TestDelegate(unittest.TestCase):
     def setUp(self):
         # init users
@@ -342,7 +391,6 @@ class TestDelegate(unittest.TestCase):
         print(type(delegate))
         self.assertTrue(len(delegate) == 1)
         self.assertTrue(delegate[0] == 2)
-
 
     def test_delegate_history(self):
 
