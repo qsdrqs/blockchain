@@ -221,6 +221,13 @@ class User:
                         in_ledger.transactions[index].delegates_sign)
                     in_ledger.transactions[index].delegates_sign.update(
                         ledger.transactions[index].delegates_sign)
+                    end_pend = True
+                    for uid in self.delegate_history[-1][1]:
+                        if uid not in in_ledger.transactions[index].delegates_sign:
+                            end_pend = False
+                    if end_pend:
+                        in_ledger.transactions[index].is_pending = False
+                        ledger.transactions[index].is_pending = False
         if len(self.ledgers) == 0:
             self.ledgers.append(in_ledger.deepcopy())
         self.ledgers += saved_ledgers

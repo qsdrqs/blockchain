@@ -21,4 +21,4 @@ if __name__ == '__main__':
     #run_specific_test_class(TestDelegate)
     #run_specific_test_method(TestDelegate, 'test_delegate_history')
     #run_specific_test_method(TestMerge, 'test_2')
-    run_specific_test_method(TestMergeSign, 'test_merge_sign_pend_only')
+    run_specific_test_method(TestMergeSign, 'test_merge_sign_pend_chg')
