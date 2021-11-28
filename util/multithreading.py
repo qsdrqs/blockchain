@@ -13,6 +13,7 @@ Implemented by thread pool library.
 '''
 from concurrent.futures import ThreadPoolExecutor
 import time
+import threading
 
 
 class ThreadPool:
@@ -91,3 +92,11 @@ class ThreadPool:
             executor.add_done_callback(
                 lambda future: read_helper(self))
             return executor
+
+
+def run_timer(time_in_seconds, callback, *callback_args):
+    '''
+    Run a timer.
+    The timer will run for `time_in_seconds` seconds.
+    '''
+    threading.Timer(time_in_seconds, callback, *callback_args).start()

@@ -21,8 +21,7 @@ class TestNetwork(unittest.TestCase):
         # init users
         self.user_list = []
         for i in range(100):
-            self.user_list.append(User(i, [], 1000,randrange(10,20)))
-
+            self.user_list.append(User(i, [], 1000, randrange(10, 20)))
 
         # init ledger
         user_digest = []
@@ -48,7 +47,7 @@ class TestNetwork(unittest.TestCase):
         count = 0
         for i in range(100):
             for j in range(100):
-                if(previous[i,j] != now[i,j]):
+                if(previous[i, j] != now[i, j]):
                     count += 1
         print(count)
         self.assertTrue(self.network.is_connected_graph())

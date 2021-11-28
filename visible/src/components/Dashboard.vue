@@ -68,6 +68,12 @@ export default {
         cy.$('#' + element.data.id).toggleClass('highlighted')
       }, 800)
     },
+    add_highlight (cy, element) {
+      /*
+       * Add highlight class to the element
+       */
+      cy.$('#' + element.data.id).addClass('highlighted')
+    },
     init_hook (cy) {
       /*
        * initailize the whole graph
@@ -109,6 +115,15 @@ export default {
           }
         }
         that.letbehighlight(cy, element)
+      })
+
+      // set the delegates
+      this.socket_io.on('update_delegate', (data) => {
+        if (data.is_delegate == 'True') {
+          cy.$('#' + data.user_id).addClass('highlighted')
+        } else {
+          cy.$('#' + data.user_id).removeClass('highlighted')
+        }
       })
     }
   }
