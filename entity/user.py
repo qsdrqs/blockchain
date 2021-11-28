@@ -38,9 +38,6 @@ class User:
         self.delegate_percentage = SimulationConfig.delegate_percentage
         self.is_delegate = False
 
-        # We need to choose delegates when the user has set up
-        self.choose_delegate()
-
     def add_transaction(self, receiver_id, amount):
         '''
         Add a transaction to every ledger of user.
