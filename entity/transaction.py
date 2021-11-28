@@ -20,7 +20,7 @@ class Transaction:
     Transaction class
     '''
 
-    def __init__(self, sender_id, receiver_id, amount, ledger=None, timestamp=None, hash=None, signature=None, is_pending = True):
+    def __init__(self, sender_id, receiver_id, amount, ledger=None, timestamp=None, hash=None, signature=None, is_pending=True):
         # Manually implement overload...
         # Rubbish Python...
         self.sender_id = sender_id

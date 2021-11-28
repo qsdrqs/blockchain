@@ -18,6 +18,7 @@ from .transaction import Transaction
 from entity import ledger
 import math
 import time
+from config import SimulationConfig
 
 
 class User:
@@ -34,6 +35,7 @@ class User:
         self.balance = init_balance
         self.radius = radius
         self.delegate_history = []
+        self.delegate_percentage = SimulationConfig.delegate_percentage
 
     def add_transaction(self, receiver_id, amount):
         '''
@@ -84,9 +86,27 @@ class User:
             if ledger.get_user_balance(user.id, user.init_balance) < 0:
                 return False
 
+        # verify the pending status
+        def verify_delegates_sign(transaction):
+            '''
+            Verify if signature is fully signed.
+            '''
+            for i in range(len(self.delegate_history)):
+                if self.delegate_history[-i - 1][1] == transaction.delegates_sign.keys():
+                    for id_sign in transaction.delegates_sign.items():
+                        if not encrypt.verify_signature(self.ledgers[0].get_user_public_key(
+                                id_sign[0]), id_sign[1], transaction.hash):
+                            return False
+                    return True
+            return False
+
+        for i in range(len(ledger.transactions)):
+            if not ledger.transactions[-i - 1].is_pending:
+                return verify_delegates_sign(ledger.transactions[-i - 1])
+
         return True
 
-    def choose_delegate(self, percentage=20):
+    def choose_delegate(self):
         scores = {}
         for uid in self.ledgers[0].user_list.keys():
             scores[uid] = self.ledgers[0].calculate_weight(uid)
@@ -96,9 +116,11 @@ class User:
         result = list(dict(
             sorted(scores.items(), key=lambda item: item[1])).keys())
         result.reverse()
-        num_delegate = int(math.ceil(len(result) * percentage / 100))
-        self.delegate_history.append((time.time(), result[:num_delegate]))
-        return result[:num_delegate]
+        num_delegate = int(
+            math.ceil(len(result) * self.delegate_percentage / 100))
+        delegate_group = set(result[:num_delegate])
+        self.delegate_history.append((time.time(), delegate_group))
+        return delegate_group
 
     def sign_delegate(self):
         if self.id in self.delegate_history[-1][1]:
