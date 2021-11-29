@@ -37,7 +37,6 @@ class User:
         self.balance = init_balance
         self.radius = radius
         self.delegate_history = []
-        self.delegate_percentage = SimulationConfig.delegate_percentage
         self.is_delegate = False
 
     def add_transaction(self, receiver_id, amount):
@@ -109,8 +108,7 @@ class User:
         result = list(dict(
             sorted(scores.items(), key=lambda item: item[1])).keys())
         result.reverse()
-        num_delegate = int(
-            math.ceil(len(result) * self.delegate_percentage / 100))
+        num_delegate = SimulationConfig.delegate_count
         delegate_group = set(result[:num_delegate])
         self.delegate_history.append((time.time(), delegate_group))
 
@@ -158,8 +156,9 @@ class User:
                 raise Exception("No ledger to sign!")
 
             # sign the ledger
-            final_ledger.transactions[-1].delegates_verify(
-                self.id, encrypt.sign_message(self.private_key, final_ledger.transactions[-1].hash))
+            for transaction in final_ledger.transactions:
+                transaction.delegates_verify(
+                    self.id, encrypt.sign_message(self.private_key, transaction.hash))
             # spread the signed ledger
             self.spread_ledger(final_ledger, network)
 
@@ -223,7 +222,8 @@ class User:
                 # append the ledgerdebugOptions
                 self.ledgers.append(ledger.deepcopy())
 
-    def handle_new_ledger(self, in_ledger):
+    def handle_new_ledger(self, in_ledger, network):
+        in_ledger = in_ledger.deepcopy()
         valid_len_in = 0
         for transaction in in_ledger.transactions:
             if not transaction.is_pending:
@@ -273,13 +273,15 @@ class User:
                     if end_pend:
                         in_ledger.transactions[index].is_pending = False
                         ledger.transactions[index].is_pending = False
-                        print("GLOBAL ADMITTED LENGTH: " + str(index))
+                        print("GLOBAL ADMITTED LENGTH: " + str(index+1))
         if len(self.ledgers) == 0:
             self.ledgers.append(in_ledger.deepcopy())
         self.ledgers += saved_ledgers
         for ledger in self.ledgers:
             ledger.transactions[:valid_len_in] = [
                 a.deepcopy() for a in in_ledger.transactions[:valid_len_in]]
+        if network is not None:
+            self.spread_ledgers(network)
 
     def receive_ledger(self, ledger, network=None):
         '''
@@ -293,12 +295,7 @@ class User:
 
         if self.verify_ledger(ledger):
 
-            self.handle_new_ledger(ledger)
-            # TODO: should be inserted into handle_new_ledger function
-            if network is not None:
-                self.spread_ledger(ledger, network)
-            else:
-                print("No network to spread ledger!")
+            self.handle_new_ledger(ledger, network)
             # update the balance
             self.update_balance(ledger)
         else:

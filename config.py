@@ -12,31 +12,32 @@ This file is the configs file for the project.
 '''
 
 from random import randint
+from math import log, ceil
 
 
 class Config:
     # Public config
-    network_row = 5
-    network_col = 5
-    users = 10
+    network_row = 20
+    network_col = 20
+    users = 100
 
 
 class TimeConfig(Config):
     # Time config
     walk_time = 10
-    delegates_select_time = 10
-    delegates_sign_time = 3
+    delegates_select_time = 60
+    delegates_sign_time = 20
 
     @staticmethod
     def transaction_time():
-        return randint(1, 3)
+        return randint(10, 10)
 
 
 class SimulationConfig(Config):
     # Simulation config
-    delegate_percentage = 20
+    delegate_count = ceil(log(Config.users))
     visual_mode = True
     server_port = 5000
     server_url = 'http://localhost:' + str(server_port)
-    radius_max = 2
-    radius_min = 2
+    radius_max = 3
+    radius_min = 3

@@ -74,4 +74,4 @@ class Transaction:
 
     def __str__(self):
         pend_status = "PEND" if self.is_pending else "DONE"
-        return f"Time {self.timestamp}: {self.sender_id} to {self.receiver_id} - ${self.amount} - {pend_status} - {self.delegates_sign}"
+        return f"Time {self.timestamp}: {self.sender_id} to {self.receiver_id} - ${self.amount} - {pend_status} - {self.delegates_sign.keys()}"
