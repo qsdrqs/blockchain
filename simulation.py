@@ -39,9 +39,9 @@ def run():
     network_entity = Network(Config.network_row, Config.network_col, user_list)
 
     print("finish init the whole simulation")
-    run_timer(5, user_transaction)
-    run_timer(20, select_delegates)
-    #run_timer(10, random_walk)
+    #run_timer(5, user_transaction)
+    #run_timer(20, select_delegates)
+    run_timer(10, random_walk)
 
     socketio.run(app, port=SimulationConfig.server_port, log_output=False)
 
@@ -68,8 +68,10 @@ def random_walk():
     '''
     Make users walk randomly
     '''
+    print("start walking")
     network_entity.random_walk()
-    run_timer(TimeConfig.walk_time, random_walk())
+    print("walk complete!")
+    run_timer(TimeConfig.walk_time, random_walk)
 
 
 def select_delegates():
