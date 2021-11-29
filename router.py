@@ -16,13 +16,19 @@ from flask_socketio import SocketIO, emit, join_room
 from flask_cors import CORS
 from config import *
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='visible/dist', static_url_path='')
 allow_origins = [
-    "http://localhost:8080", "http://127.0.0.1:8080"]
+    "http://localhost:8080", "http://127.0.0.1:8080",
+    "http://127.0.0.1:"+str(SimulationConfig.server_port), SimulationConfig.server_url]
 socketio = SocketIO(app, cors_allowed_origins=allow_origins)
 CORS(app, origins=allow_origins)
 
 connect_magic_number = 64  # can be everything
+
+
+@app.route('/')
+def index():
+    return app.send_static_file('index.html')
 
 
 @socketio.on('connect_front', namespace='/ws')
