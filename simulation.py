@@ -52,6 +52,7 @@ def run():
     run_timer(10, random_walk)
 
     run_timer(1, add_running_time)
+    print(f"Server now running on {SimulationConfig.server_url}")
     socketio.run(app, port=SimulationConfig.server_port, log_output=False)
 
 

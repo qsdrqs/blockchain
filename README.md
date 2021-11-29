@@ -9,6 +9,8 @@ First run `pip install -r requirements.txt` to install Python dependencies.
 
 Run `main.py` to start the simulation, after starting the simulation, you can access the simulation by http://127.0.0.1:5000.
 
+***Warning:***: Only works fine on Unix-like systems. Use chrome/chromium for a better performance.
+
 For front-end development, you can go to the `visible` folder and run `npm install` or `yarn install` to install front-end dependencies.
 
 Then run `yarn run dev` or `npm run dev` to start the front-end server. Use `yarn run build` or `npm run build` to build the front-end.
