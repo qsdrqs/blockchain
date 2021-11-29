@@ -24,7 +24,8 @@ class Config:
 class TimeConfig(Config):
     # Time config
     walk_time = 10
-    delegate_time = 10
+    delegates_select_time = 10
+    delegates_sign_time = 3
 
     @staticmethod
     def transaction_time():

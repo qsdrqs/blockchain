@@ -104,7 +104,7 @@ class User:
             scores[uid] = self.ledgers[0].calculate_weight(uid)
             for i in range(1, 4):
                 if len(self.delegate_history) >= i and (uid in self.delegate_history[-i][1]):
-                    scores[uid] = scores[uid] * 0.8
+                    scores[uid] = scores[uid] * 0.5
         print(scores)
         result = list(dict(
             sorted(scores.items(), key=lambda item: item[1])).keys())
@@ -128,7 +128,7 @@ class User:
 
         return delegate_group
 
-    def sign_delegate(self):
+    def sign_delegate(self, network):
         '''
         delegate sign the ledger
         '''
@@ -157,8 +157,11 @@ class User:
             if final_ledger is None:
                 raise Exception("No ledger to sign!")
 
+            # sign the ledger
             final_ledger.transactions[-1].delegates_verify(
                 self.id, encrypt.sign_message(self.private_key, final_ledger.transactions[-1].hash))
+            # spread the signed ledger
+            self.spread_ledger(final_ledger, network)
 
     def check_delegate_signature(self, ledger):
         '''
@@ -270,6 +273,7 @@ class User:
                     if end_pend:
                         in_ledger.transactions[index].is_pending = False
                         ledger.transactions[index].is_pending = False
+                        print("GLOBAL ADMITTED LENGTH: " + str(index))
         if len(self.ledgers) == 0:
             self.ledgers.append(in_ledger.deepcopy())
         self.ledgers += saved_ledgers
