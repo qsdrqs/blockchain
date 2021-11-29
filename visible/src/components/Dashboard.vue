@@ -1,5 +1,16 @@
 <template>
   <div class="dashboard">
+    <div class="dashboard_headers">
+      <div>
+        Global Admitted Chain Length: {{ chainLength }}
+      </div>
+      <div>
+        Transactions Happened: {{ transactions }}
+      </div>
+      <div>
+        Time Passed After Simulation Start: {{ timePassed }}
+      </div>
+    </div>
     <cytoscape ref="cy" :config="config" :afterCreated="init_hook">
       <cy-element v-for="element in elements.nodes" :key="element.data.id" :sync=true :definition="element" v-on:click="letbehighlight($event,element)" />
       <cy-element v-for="element in elements.edges" :key="element.data.id" :sync=true :definition="element" v-on:click="letbehighlight($event,element)" />
@@ -54,7 +65,10 @@ export default {
         edges: [
         ]
       },
-      socket_io: null
+      socket_io: null,
+      chainLength: 0,
+      transactions: 0,
+      timePassed: '00:00:00'
     }
   },
   methods: {
@@ -88,13 +102,23 @@ export default {
           )
         }
       })
+      // init the transactions
+      this.axios.get('http://127.0.0.1:5000/get_transactions').then((response) => {
+        that.transactions = response.data
+      })
+
+      // init the chain length of admitted
+      this.axios.get('http://127.0.0.1:5000//get_admitted_chains').then((response) => {
+        that.chainLength = response.data
+      })
 
       // init the position
       this.socket_io.on('update_topo', (coordinates) => {
         that.elements.edges = []
         for (let i = 0; i < coordinates.length; i++) {
           coordinates[i].connected_users = JSON.parse(coordinates[i].connected_users)
-          cy.$('#' + coordinates[i].user_id).position(coordinates[i].position)
+          let position = {'x': coordinates[i].position.x * 75 + 100, 'y': coordinates[i].position.y * 75 + 100}
+          cy.$('#' + coordinates[i].user_id).position(position)
           // init the edges
           for (let j = 0; j < coordinates[i].connected_users.length; j++) {
             that.elements.edges.push(
@@ -125,6 +149,36 @@ export default {
           cy.$('#' + data.user_id).removeClass('highlighted')
         }
       })
+
+      // get the running time every second
+      setInterval(() => {
+        this.axios.get('http://127.0.0.1:5000/get_running_time').then((response) => {
+          let time = response.data
+          let hour = Math.floor(time / 3600)
+          let minute = Math.floor((time - hour * 3600) / 60)
+          let second = time - hour * 3600 - minute * 60
+          if (hour < 10) {
+            hour = '0' + hour
+          }
+          if (minute < 10) {
+            minute = '0' + minute
+          }
+          if (second < 10) {
+            second = '0' + second
+          }
+          that.timePassed = hour + ':' + minute + ':' + second
+        })
+      }, 1000)
+
+      // set the chain length listener
+      this.socket_io.on('update_chain_length', (data) => {
+        that.chainLength = data
+      })
+
+      // set the transactions listener
+      this.socket_io.on('update_transactions', (data) => {
+        that.transactions = data
+      })
     }
   }
 }
@@ -145,5 +199,13 @@ li {
 }
 a {
   color: #42b983;
+}
+.dashboard_headers {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 </style>

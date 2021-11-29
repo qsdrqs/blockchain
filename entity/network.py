@@ -38,6 +38,7 @@ class Network:
             users: user list in the network.
         '''
         self.users = {}
+        self.pos = {}
         # len(self.users) always return 1, so add new variable self.user_count
         self.user_count = 0
         self.rows = rows
@@ -65,20 +66,13 @@ class Network:
         # Initia
         # lize the network.
         self.network_matrix = matlib.empty((self.rows, self.cols), dtype=User)
-        self.pos = {}
-        pos_count = 0
         for user in self.users.values():
-            pos_temp = [randrange(self.rows), randrange(self.cols)]
-            if(pos_count == 0):
-                self.pos[pos_count] = pos_temp
-            j = 0
-            while j != len(self.pos):
-                if(pos_temp == self.pos[j]):
-                    pos_temp = [randrange(self.rows), randrange(self.cols)]
-                else:
-                    j = j+1
-            self.pos[user.id] = pos_temp
-            self.network_matrix[pos_temp[0], pos_temp[1]] = user
+            tmp_pos = [randrange(self.rows), randrange(self.cols)]
+            while self.network_matrix[tmp_pos[0], tmp_pos[1]] is not None:
+                tmp_pos = [randrange(self.rows), randrange(self.cols)]
+
+            self.pos[user.id] = tmp_pos
+            self.network_matrix[tmp_pos[0], tmp_pos[1]] = user
 
         # self.network_matrix[1,2] = self.users[1]
         # Initialize the connect matrix.
@@ -156,17 +150,19 @@ class Network:
         if sender is None or receiver is None:
             print("Failed to send ledger from {} to user {}".format(
                 sender_id, receiver_id))
+            return
 
         # check if the sender and receiver are connected.
         if not self.is_connected(sender, receiver):
             print("Failed to send ledger from {} to user {}".format(
                 sender_id, receiver_id))
+            return
 
         # handle the visual mode
         if SimulationConfig.visual_mode:
             requests.get(SimulationConfig.server_url+'/spread_ledger',
                          params={'src': sender_id, 'dest': receiver_id})
-        # return self.thread_pool.run_task_async(receiver_id, "receive_ledger", ledger, self, is_write=True)
+        # return self.thread_pool.threadpool.submit(receiver.receive_ledger, ledger, self)
         return receiver.receive_ledger(ledger, self)
 
     def single_walk(self, walk_id):
@@ -259,7 +255,7 @@ class Network:
         walk_list = {}
         id_array = {}
         # select 10 percent users to random walk
-        for i in range(int(self.user_count/10)):
+        for i in range(int(self.user_count * SimulationConfig.walk_percent/100)):
             rand_id = randrange(1, self.user_count+1)
             id_array[i] = rand_id
             j = 0

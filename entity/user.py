@@ -98,13 +98,13 @@ class User:
         return True
 
     def choose_delegate(self):
+        self.drop_residual_sign()
         scores = {}
         for uid in self.ledgers[0].user_list.keys():
             scores[uid] = self.ledgers[0].calculate_weight(uid)
             for i in range(1, 4):
                 if len(self.delegate_history) >= i and (uid in self.delegate_history[-i][1]):
                     scores[uid] = scores[uid] * 0.5
-        print(scores)
         result = list(dict(
             sorted(scores.items(), key=lambda item: item[1])).keys())
         result.reverse()
@@ -126,7 +126,7 @@ class User:
 
         return delegate_group
 
-    def sign_delegate(self, network):
+    def sign_delegate(self):
         '''
         delegate sign the ledger
         '''
@@ -157,10 +157,14 @@ class User:
 
             # sign the ledger
             for transaction in final_ledger.transactions:
+                if not transaction.is_pending:
+                    continue
                 transaction.delegates_verify(
                     self.id, encrypt.sign_message(self.private_key, transaction.hash))
             # spread the signed ledger
-            self.spread_ledger(final_ledger, network)
+            return final_ledger
+        else:
+            return None
 
     def check_delegate_signature(self, ledger):
         '''
@@ -172,7 +176,7 @@ class User:
             Verify if signature is fully signed.
             '''
             for i in range(len(self.delegate_history)):
-                if self.delegate_history[-i - 1][1] == transaction.delegates_sign.keys():
+                if self.delegate_history[-i - 1][1].difference(transaction.delegates_sign.keys()) == set():
                     for id_sign in transaction.delegates_sign.items():
                         if not encrypt.verify_signature(self.ledgers[0].get_user_public_key(
                                 id_sign[0]), id_sign[1], transaction.hash):
@@ -273,7 +277,10 @@ class User:
                     if end_pend:
                         in_ledger.transactions[index].is_pending = False
                         ledger.transactions[index].is_pending = False
-                        print("GLOBAL ADMITTED LENGTH: " + str(index+1))
+                        global admitted_chains
+                        admitted_chains = index + 1
+                        requests.get(SimulationConfig.server_url+"/update_chain_length", params={
+                                     "chain_length": admitted_chains})
         if len(self.ledgers) == 0:
             self.ledgers.append(in_ledger.deepcopy())
         self.ledgers += saved_ledgers
@@ -307,7 +314,7 @@ class User:
         '''
         user_id_list = network.get_connected_users(self.id)
         for receiver_id in user_id_list:
-            network.send_ledger(self.id, receiver_id, ledger)
+            network.send_ledger(self.id, receiver_id, ledger.deepcopy())
 
     def spread_ledgers(self, network):
         '''
@@ -322,7 +329,7 @@ class User:
         '''
         for receiver_id in receiver_list:
             for ledger in self.ledgers:
-                network.send_ledger(self.id, receiver_id, ledger)
+                network.send_ledger(self.id, receiver_id, ledger.deepcopy())
 
     def drop_ledger(self, ledger):
         '''
@@ -377,9 +384,8 @@ class User:
             checked_length_in = ledger_in.delegates_sign_len()
             if(checked_length_in != checked_length_my):
                 return False
-            for i in range(checked_length_in, len(ledger_my.transactions)):
-                if ledger_my.transactions[i].delegates_sign.keys() != ledger_in.transactions[i].delegates_sign.keys():
-                    return False
+            if ledger_my.transactions[-1].delegates_sign.keys() != ledger_in.transactions[-1].delegates_sign.keys():
+                return False
             return True
 
         for ledger in self.ledgers:
@@ -387,3 +393,14 @@ class User:
                 return True
 
         return False
+
+    def drop_residual_sign(self):
+        '''
+        Drop not full sign of delegates
+
+        '''
+        for ledger in self.ledgers:
+            for transaction in ledger.transactions:
+                if not transaction.is_pending:
+                    continue
+                transaction.delegates_sign.clear()

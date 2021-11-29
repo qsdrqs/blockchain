@@ -146,4 +146,4 @@ class Ledger():
 
     def __str__(self):
         nl = "\n\t"
-        return f"Ledger {id(self)} User list: {self.user_list.keys()}\n\t{nl.join([str(t) for t in self.transactions])}"
+        return f"Ledger {id(self)} User list: \n\t{nl.join([str(t) for t in self.transactions])}"

@@ -24,13 +24,13 @@ class Config:
 
 class TimeConfig(Config):
     # Time config
-    walk_time = 5
+    walk_time = 2
     delegates_select_time = 60
-    delegates_sign_time = 20
+    delegates_sign_time = 3
 
     @staticmethod
     def transaction_time():
-        return randint(10, 10)
+        return randint(5, 10)
 
 
 class SimulationConfig(Config):
@@ -43,3 +43,4 @@ class SimulationConfig(Config):
     radius_min = 3
     walk_min_num = 5
     walk_max_num = 15
+    walk_percent = 10
