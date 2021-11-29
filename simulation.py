@@ -39,10 +39,11 @@ def run():
     network_entity = Network(Config.network_row, Config.network_col, user_list)
 
     print("finish init the whole simulation")
-    #run_timer(TimeConfig.transaction_time(), user_transaction)
-    run_timer(10, user_transaction)
+    run_timer(5, user_transaction)
+    run_timer(20, select_delegates)
+    #run_timer(10, random_walk)
 
-    socketio.run(app, port=SimulationConfig.server_port, log_output=True)
+    socketio.run(app, port=SimulationConfig.server_port, log_output=False)
 
 
 def user_transaction():
@@ -50,12 +51,31 @@ def user_transaction():
     Generate a transaction from any user to any user
     '''
     # Get the user
-    user_from = network_entity.users[randint(
-        1, network_entity.user_count)]
-    user_to = network_entity.users[randint(
-        1, network_entity.user_count)]
+    from_id = randint(1, network_entity.user_count)
+    to_id = randint(1, network_entity.user_count)
+    while from_id == to_id:
+        to_id = randint(1, network_entity.user_count)
+    user_from = network_entity.users[from_id]
+    user_to = network_entity.users[to_id]
     if user_from.balance > 1:
-        if user_from.add_transaction(user_to.id, randint(1, ceil(user_from.balance/4))):
+        if user_from.add_transaction(user_to.id, randint(1, 1)):
             user_from.spread_ledgers(network_entity)
 
-    run_timer(5, user_transaction)
+    run_timer(TimeConfig.transaction_time(), user_transaction)
+
+
+def random_walk():
+    '''
+    Make users walk randomly
+    '''
+    network_entity.random_walk()
+    run_timer(TimeConfig.walk_time, random_walk())
+
+
+def select_delegates():
+    '''
+    Select the delegates
+    '''
+    for user in network_entity.users.values():
+        user.choose_delegate()
+    run_timer(TimeConfig.delegate_time, select_delegates)

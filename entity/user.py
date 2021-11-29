@@ -98,13 +98,14 @@ class User:
 
         return True
 
-    def choose_delegate(self, network=None):
+    def choose_delegate(self):
         scores = {}
         for uid in self.ledgers[0].user_list.keys():
             scores[uid] = self.ledgers[0].calculate_weight(uid)
             for i in range(1, 4):
                 if len(self.delegate_history) >= i and (uid in self.delegate_history[-i][1]):
                     scores[uid] = scores[uid] * 0.8
+        print(scores)
         result = list(dict(
             sorted(scores.items(), key=lambda item: item[1])).keys())
         result.reverse()
@@ -122,7 +123,8 @@ class User:
         else:
             self.is_delegate = False
             if SimulationConfig.visual_mode:
-                update_delegate(self.id, self.is_delegate)
+                requests.get(SimulationConfig.server_url+"/update_delegate", params={
+                             "delegate_id": self.id, "is_delegate": self.is_delegate})
 
         return delegate_group
 
@@ -213,10 +215,10 @@ class User:
             if same_ledger(my_ledger, ledger):
                 # update the ledger
                 self.ledgers.remove(my_ledger)
-                self.ledgers.append(ledger)
+                self.ledgers.append(ledger.deepcopy())
             else:
                 # append the ledgerdebugOptions
-                self.ledgers.append(ledger)
+                self.ledgers.append(ledger.deepcopy())
 
     def handle_new_ledger(self, in_ledger):
         valid_len_in = 0
@@ -287,10 +289,12 @@ class User:
 
         if self.verify_ledger(ledger):
 
-            self._append_or_update(ledger)
+            self.handle_new_ledger(ledger)
             # TODO: should be inserted into handle_new_ledger function
             if network is not None:
                 self.spread_ledger(ledger, network)
+            else:
+                print("No network to spread ledger!")
             # update the balance
             self.update_balance(ledger)
         else:
