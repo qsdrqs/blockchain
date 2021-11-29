@@ -42,7 +42,7 @@ def run():
     run_timer(5, user_transaction)
     run_timer(10, select_delegates)
     run_timer(11, delegates_sign)
-    #run_timer(10, random_walk)
+    run_timer(10, random_walk)
 
     socketio.run(app, port=SimulationConfig.server_port, log_output=False)
 

@@ -10,7 +10,6 @@ Authors: Tianyang Zhou <t7zhou@ucsd.edu>
 This file defines the network entity of the project.
 
 '''
-from typing_extensions import final
 from .user import User
 import numpy as np
 import numpy.random as npr
@@ -282,7 +281,6 @@ class Network:
                                 final_pos[1]] = self.users[walk_id]
             self.network_matrix[initial_pos[0], initial_pos[1]] = None
             self.pos[walk_id] = final_pos
-
 
         if SimulationConfig.visual_mode:
             requests.get(SimulationConfig.server_url+'/update_topo')

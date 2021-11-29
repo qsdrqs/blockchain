@@ -24,7 +24,7 @@ class Config:
 
 class TimeConfig(Config):
     # Time config
-    walk_time = 10
+    walk_time = 5
     delegates_select_time = 60
     delegates_sign_time = 20
 
