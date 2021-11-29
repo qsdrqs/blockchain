@@ -566,10 +566,8 @@ class TestSameLedger(unittest.TestCase):
         ledger_2.transactions[1].is_pending = False
         self.users[1].ledgers.append(ledger_2.deepcopy())
 
-        print("\n")
+        print(self.users[1].check_ledger_same(ledger_1, ledger_1))
         print("Local ledger: \n" + str(self.users[0].ledgers[0]))
         ledger_1.transactions[2].is_pending = False
-        print("In ledger: \n" + str(ledger_1))
-        self.users[0].handle_new_ledger(ledger_1)
 
         print("Local ledger: \n" + str(self.users[0].ledgers[0]))
