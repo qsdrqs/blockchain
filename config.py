@@ -41,3 +41,5 @@ class SimulationConfig(Config):
     server_url = 'http://localhost:' + str(server_port)
     radius_max = 3
     radius_min = 3
+    walk_min_num = 5
+    walk_max_num = 15

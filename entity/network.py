@@ -10,6 +10,7 @@ Authors: Tianyang Zhou <t7zhou@ucsd.edu>
 This file defines the network entity of the project.
 
 '''
+from typing_extensions import final
 from .user import User
 import numpy as np
 import numpy.random as npr
@@ -20,6 +21,7 @@ import requests
 from util.multithreading import ThreadPool
 from config import Config, SimulationConfig
 from router import connect, spread_ledger
+from config import *
 
 
 class Network:
@@ -168,50 +170,98 @@ class Network:
         # return self.thread_pool.run_task_async(receiver_id, "receive_ledger", ledger, self, is_write=True)
         return receiver.receive_ledger(ledger, self)
 
-    def random_walk(self):
-
-        walk_min_num = 5
-        walk_max_num = 15
-
-        def single_walk(walk_id):
-            final_pos = self.pos[walk_id]
-            for i in range(randrange(walk_min_num, walk_max_num)):
-                direction = randrange(0, 4)
-                if(direction == 0):
-                    final_pos = [final_pos[0], final_pos[1]-1]
-                elif(direction == 1):
-                    final_pos = [final_pos[0]+1, final_pos[1]]
-                elif(direction == 2):
+    def single_walk(self, walk_id):
+        walk_min_num = SimulationConfig.walk_min_num
+        walk_max_num = SimulationConfig.walk_max_num
+        initial_pos = self.pos[walk_id]
+        final_pos = self.pos[walk_id]
+        i = 0
+        while i < (randrange(walk_min_num, walk_max_num)):
+            direction = randrange(0, 4)
+            if(direction == 0):
+                if((final_pos[1]) <= 0):
                     final_pos = [final_pos[0], final_pos[1]+1]
                 else:
+                    final_pos = [final_pos[0], final_pos[1]-1]
+            elif(direction == 1):
+                if((final_pos[0]) >= self.rows-1):
+                    final_pos = [final_pos[0]-1, final_pos[1]]
+                else:
                     final_pos = [final_pos[0]+1, final_pos[1]]
-            return final_pos
+            elif(direction == 2):
+                if((final_pos[1]) >= self.cols-1):
+                    final_pos = [final_pos[0], final_pos[1]-1]
+                else:
+                    final_pos = [final_pos[0], final_pos[1]+1]
+            else:
+                if((final_pos[0]) <= 0):
+                    final_pos = [final_pos[0]+1, final_pos[1]]
+                else:
+                    final_pos = [final_pos[0]-1, final_pos[1]]
+            if not (self.is_pos_coincide(final_pos)):
+                i = 0
+            i += 1
+        self.network_matrix[final_pos[0],
+                            final_pos[1]] = self.users[walk_id]
+        self.network_matrix[initial_pos[0], initial_pos[1]] = None
+        self.pos[walk_id] = final_pos
 
-        def is_user_connected(walk_id, walk_pos):
-            walk_user = self.users[walk_id]
-            for user in self.users.keys():
-                if(user != walk_user):
-                    vec1 = np.array(walk_pos)
-                    vec2 = np.array(self.pos[user])
+        self.connect_matrix = matlib.zeros(
+            (self.user_count + 1, self.user_count + 1), dtype=bool)
+        for user1 in self.users.keys():
+            for user2 in self.users.keys():
+                if user1 != user2:
+                    com_radius = min(
+                        self.users[user1].radius, self.users[user2].radius)
+                    vec1 = np.array(self.pos[user1])
+                    vec2 = np.array(self.pos[user2])
                     distance = np.sqrt(
                         (vec1[0]-vec2[0])*(vec1[0]-vec2[0]) + (vec1[1]-vec2[1])*(vec1[1]-vec2[1]))
-                    com_radius = min(
-                        self.users[walk_id].radius, self.users[user].radius)
-                    if(distance < com_radius):
-                        return True
-            return False
+                    if(distance <= com_radius):
+                        self.connect_matrix[user1, user2] = True
+                        self.connect_matrix[user2, user1] = True
+        # print("end single walk")
+        return final_pos
 
-        def is_pos_coincide(walk_pos):
-            for user_id in self.users.keys():
-                if(walk_pos == self.pos[user_id]):
-                    return False
-            return True
+    def is_user_connected(self, walk_id, walk_pos):
+        walk_user = self.users[walk_id]
+        for user in self.users.keys():
+            if(user != walk_user):
+                vec1 = np.array(walk_pos)
+                vec2 = np.array(self.pos[user])
+                distance = np.sqrt(
+                    (vec1[0]-vec2[0])*(vec1[0]-vec2[0]) + (vec1[1]-vec2[1])*(vec1[1]-vec2[1]))
+                com_radius = min(
+                    self.users[walk_id].radius, self.users[user].radius)
+                if(distance <= com_radius):
+                    return True
+        return False
+
+    def is_pos_coincide(self, walk_pos):
+        for user_id in self.users.keys():
+            if(walk_pos == self.pos[user_id]):
+                return False
+        return True
+
+    def get_single_walk(self, final_pos, walk_id, initial_pos):
+        while not (self.is_connected_graph()):
+            # self.is_pos_coincide(final_pos) &
+            self.network_matrix[initial_pos[0],
+                                initial_pos[1]] = self.users[walk_id]
+            self.network_matrix[final_pos[0], final_pos[1]] = None
+            self.pos[walk_id] = initial_pos
+            final_pos = self.single_walk(walk_id)
+        #     print("single walk again")
+        # print("good network acquired")
+        return final_pos
+
+    def random_walk(self):
 
         walk_list = {}
         id_array = {}
         # select 10 percent users to random walk
         for i in range(int(self.user_count/10)):
-            rand_id = randrange(0, self.user_count)
+            rand_id = randrange(1, self.user_count+1)
             id_array[i] = rand_id
             j = 0
             while j != i:
@@ -225,13 +275,14 @@ class Network:
         # final_pos_list = {}
         for walk_id in walk_list.keys():
             initial_pos = self.pos[walk_id]
-            final_pos = single_walk(walk_id)
-            while not (is_user_connected(walk_id, final_pos) & is_pos_coincide(final_pos)):
-                final_pos = single_walk(walk_id)
+            final_pos = self.single_walk(walk_id)
+            final_pos = self.get_single_walk(final_pos, walk_id, initial_pos)
+            # print(final_pos)
             self.network_matrix[final_pos[0],
                                 final_pos[1]] = self.users[walk_id]
             self.network_matrix[initial_pos[0], initial_pos[1]] = None
             self.pos[walk_id] = final_pos
+
 
         if SimulationConfig.visual_mode:
             requests.get(SimulationConfig.server_url+'/update_topo')

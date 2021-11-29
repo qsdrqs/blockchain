@@ -69,8 +69,10 @@ def random_walk():
     '''
     Make users walk randomly
     '''
+    print("start walking")
     network_entity.random_walk()
-    run_timer(TimeConfig.walk_time, random_walk())
+    print("walk complete!")
+    run_timer(TimeConfig.walk_time, random_walk)
 
 
 def select_delegates():
