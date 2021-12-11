@@ -28,6 +28,7 @@ def run():
     # Initialize the python environment
     sys.setrecursionlimit(10000)
     # Initialize the entities
+    print("Initializing the entities...")
     user_list = []
     for i in range(1, SimulationConfig.users+1):
         user_list.append(User(i, [], 1000, randint(
